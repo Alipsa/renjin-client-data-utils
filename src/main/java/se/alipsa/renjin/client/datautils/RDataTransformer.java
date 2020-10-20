@@ -10,6 +10,10 @@ import java.util.Map;
 
 public class RDataTransformer {
 
+  private RDataTransformer() {
+    // Utiltity class
+  }
+
   public static List<String> toHeaderList(ListVector df) {
     List<String> colList = new ArrayList<>();
     if (df.hasAttributes()) {
