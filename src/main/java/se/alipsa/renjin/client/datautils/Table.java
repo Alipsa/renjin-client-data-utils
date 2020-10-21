@@ -72,18 +72,16 @@ public class Table {
   }
 
   public Table(Matrix mat) {
-    if(mat.getVector() instanceof IntVector) {
-      for (int i = 0; i < mat.getNumCols(); i++) {
-        columnTypes.add(DataType.INTEGER);
-      }
-    } else if (mat.getVector() instanceof DoubleVector) {
-      for (int i = 0; i < mat.getNumCols(); i++) {
-        columnTypes.add(DataType.DOUBLE);
-      }
+    DataType dataType;
+    if("integer".equals(mat.getVector().getTypeName())) {
+      dataType = DataType.INTEGER;
+    } else { // No other types supported in Renjin at the moment
+      dataType = DataType.DOUBLE;
     }
-    // No other types supported in Renjin at the moment
+    for (int i = 0; i < mat.getNumCols(); i++) {
+      columnTypes.add(dataType);
+    }
 
-    String type = mat.getVector().getTypeName();
     for (int i = 0; i < mat.getNumCols(); i++) {
       String colName = mat.getColName(i) == null ? i + "" : mat.getColName(i);
       headerList.add(colName);
@@ -93,7 +91,7 @@ public class Table {
     for (int i = 0; i < mat.getNumRows(); i++) {
       row = new ArrayList<>();
       for (int j = 0; j < mat.getNumCols(); j++) {
-        if ("integer".equals(type)) {
+        if (DataType.INTEGER == dataType) {
           row.add(mat.getElementAsInt(i, j));
         } else {
           row.add(mat.getElementAsDouble(i, j));
@@ -136,6 +134,10 @@ public class Table {
 
   public List<List<Object>> getRowList() {
     return rowList;
+  }
+
+  public List<DataType> getColumnTypes() {
+    return columnTypes;
   }
 
   /**
@@ -195,5 +197,13 @@ public class Table {
 
   public Float getValueAsFloat(int row, int column) {
     return getValueAsDouble(row, column).floatValue();
+  }
+
+  public Byte getValueAsByte(int rowIdx, int colIdx) {
+    Object val = getValue(rowIdx, colIdx);
+    if (val instanceof Byte) {
+      return (Byte)val;
+    }
+    return Byte.valueOf(String.valueOf(val));
   }
 }

@@ -29,8 +29,12 @@ public class RDataTransformer {
   }
 
   public static List<DataType> toTypeList(ListVector df) {
-    //TODO: implement me!
-
+    List<DataType> typeList = new ArrayList<>();
+    for (SEXP col : df) {
+      Vector column = (Vector) col;
+      typeList.add(DataType.forVectorType(column.getVectorType()));
+    }
+    return typeList;
   }
 
   public static List<List<Object>> toRowlist(ListVector df) {
@@ -42,65 +46,56 @@ public class RDataTransformer {
     return transpose(table);
   }
 
-  // TODO: this needs some work, col.getElementAsObject(i) returns Integer.MIN_VALUE instead of null for numerics
   public static List<List<Object>> transpose(List<Vector> table) {
     List<List<Object>> ret = new ArrayList<>();
     final int N = table.get(0).length();
-    //System.out.println("Transposing a table with " + N + " columns into " + N + " rows");
     for (int i = 0; i < N; i++) {
       List<Object> row = new ArrayList<>();
       for (Vector col : table) {
-        if (Types.isFactor(col)) {
-          int index = col.getElementAsInt(i) - 1;
-          if (index < 0 || index > col.length() -1) {
-            /*
-            System.err.println("Failed to extract value from factor element, index " + index + " is bigger than vector size " + vec.length());
-            System.err.println("Factor vector is " + vec.toString());
-            System.err.println("Factor vector names are " + vec.getNames());
-            System.err.println("col.getElementAsObject(i) = " + col.getElementAsObject(i));
-            System.err.println("col " + (row.size() + 1) + " row " + (i + 1) + " interpreted as null");
-             */
-            row.add(null);
-          } else {
-            AttributeMap attributes = col.getAttributes();
-            Map<Symbol, SEXP> attrMap = attributes.toMap();
-            Symbol s = attrMap.keySet().stream().filter(p -> "levels".equals(p.getPrintName())).findAny().orElse(null);
-            Vector vec = (Vector) attrMap.get(s);
-            row.add(vec.getElementAsObject(index));
-            //row.add(vec.getElementAsString(index)); // TODO: try this is instead, makes more sense as we know this is a string
-          }
-        } else {
-          /*
-          // TODO: Look at the type and do something for each type to avoid Integer.MIN_VALUE etc.
-          //  Types are ComplexVector, DoubleVector, ExpressionVector, IntVector, ListVector, LogicalVector,
-          //  org.renjin.sexp.Null, RawVector, StringVector.
-          Vector.Type type = col.getVectorType();
-          if (ComplexVector.VECTOR_TYPE.equals(type)) {
-            row.add(col.getElementAsObject(i));
-          } else if (DoubleVector.VECTOR_TYPE.equals(type)) {
-            row.add(col.getElementAsDouble(i));
-          } else if () {
-
-          }
-           */
-          row.add(col.getElementAsObject(i));
-        }
+        getValue(col, row, i);
       }
       ret.add(row);
     }
     return ret;
   }
 
+  private static void getValue(Vector col, List<Object> column, int i) {
+    if (Types.isFactor(col)) {
+      AttributeMap attributes = col.getAttributes();
+      Map<Symbol, SEXP> attrMap = attributes.toMap();
+      Symbol s = attrMap.keySet().stream().filter(p -> "levels".equals(p.getPrintName())).findAny().orElse(null);
+      Vector vec = (Vector) attrMap.get(s);
+      column.add(vec.getElementAsObject(col.getElementAsInt(i) - 1));
+    } else {
+      column.add(col.getElementAsObject(i));
+    }
+  }
+
   public static ListVector toDataFrame(Table table) {
-    List<StringVector.Builder> builders = stringBuilders(table.headerList.size());
+    //List<StringVector.Builder> builders = stringBuilders(table.headerList.size());
+    List<Vector.Builder<?>> builders = builders(table);
     int numRows = 0;
+
     for (int rowIdx = 0; rowIdx < table.rowList.size(); rowIdx++) {
       numRows++;
       List<Object> row = table.rowList.get(rowIdx);
       int i = 0;
       for (int colIdx = 0; colIdx < row.size(); colIdx++) {
         //System.out.println("Adding ext.getString(" + rowIdx + ", " + colIdx+ ") = " + ext.getString(row, colIdx));
-        builders.get(i++).add(String.valueOf(row.get(colIdx)));
+
+        Vector.Builder<?> builder = builders.get(i++);
+        if (builder instanceof IntArrayVector.Builder) {
+          ((IntArrayVector.Builder)builder).add(table.getValueAsInteger(rowIdx, colIdx));
+        } else if (builder instanceof LogicalArrayVector.Builder) {
+          ((LogicalArrayVector.Builder)builder).add(table.getValueAsBoolean(rowIdx, colIdx));
+        } else if (builder instanceof DoubleArrayVector.Builder) {
+          ((DoubleArrayVector.Builder)builder).add(table.getValueAsDouble(rowIdx, colIdx));
+        } else if (builder instanceof StringVector.Builder) {
+          ((StringVector.Builder)builder).add(table.getValueAsString(rowIdx, colIdx));
+        } else if (builder instanceof RawVector.Builder) {
+          ((RawVector.Builder)builder).add(table.getValueAsByte(rowIdx, colIdx));
+        }
+            //.add(String.valueOf(row.get(colIdx)));
       }
     }
     ListVector columnVector = columnInfo(table.headerList);
@@ -123,6 +118,17 @@ public class RDataTransformer {
       tv.add(cv.build());
     }
     return tv.build();
+  }
+
+  private static List<Vector.Builder<?>> builders(Table table) {
+    int numColNums = table.columnTypes.size();
+    int numRows = table.getRowList().size();
+    List<Vector.Builder<?>> builderList = new ArrayList<>(numColNums);
+    for (int i = 0; i < numColNums; i++) {
+      DataType dataType = table.columnTypes.get(i);
+      builderList.add(dataType.getVectorType().newBuilderWithInitialCapacity(numRows));
+    }
+    return builderList;
   }
 
   private static List<StringVector.Builder> stringBuilders(int numColNums) {

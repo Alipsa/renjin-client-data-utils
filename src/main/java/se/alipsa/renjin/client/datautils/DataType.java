@@ -14,7 +14,7 @@ public enum DataType {
   BOOLEAN("logical", LogicalVector.VECTOR_TYPE),
   DOUBLE("double", DoubleVector.VECTOR_TYPE),
   STRING("character", StringVector.VECTOR_TYPE),
-  BYTE_ARRAY("raw", RawVector.VECTOR_TYPE);
+  BYTE("raw", RawVector.VECTOR_TYPE);
 
   private final String rtypeName;
   private final Vector.Type vectorType;
@@ -58,11 +58,11 @@ public enum DataType {
       case Types.FLOAT:
       case Types.REAL:
         return DataType.DOUBLE;
-      case Types.JAVA_OBJECT:
-      case Types.LONGVARBINARY:
-      case Types.BLOB:
-      case Types.VARBINARY:
-        return DataType.BYTE_ARRAY;
+      //case Types.JAVA_OBJECT:
+      //case Types.LONGVARBINARY:
+      //case Types.BLOB:
+      //case Types.VARBINARY:
+      //  return DataType.BYTE_ARRAY;
       default:
         return(null);
     }
