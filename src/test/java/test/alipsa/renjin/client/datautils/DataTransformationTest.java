@@ -1,6 +1,9 @@
 package test.alipsa.renjin.client.datautils;
 
 import org.junit.jupiter.api.Test;
+import org.renjin.eval.Session;
+import org.renjin.eval.SessionBuilder;
+import org.renjin.script.RenjinScriptEngine;
 import org.renjin.script.RenjinScriptEngineFactory;
 import org.renjin.sexp.ListVector;
 import se.alipsa.renjin.client.datautils.Table;
@@ -37,13 +40,29 @@ public class DataTransformationTest {
         "lineItems[5, ] <- list('Sales', 22000, 22000, 42000 , 25000, 26000, 27000, 28000, 29000, 60000, 31000, 32000, 33000 )\n" +
         "lineItems";
     RenjinScriptEngineFactory factory = new RenjinScriptEngineFactory();
-    ListVector lineItemsDf = (ListVector)factory.getScriptEngine().eval(dfCode);
+    Session session = SessionBuilder.buildDefault();
+    RenjinScriptEngine engine = factory.getScriptEngine(session);
+    ListVector lineItemsDf = (ListVector)engine.eval(dfCode);
 
     Table table = new Table(lineItemsDf);
 
+    assertEquals(13, table.getHeaderList().size(), "Number of columns in header");
     assertEquals(table.getHeaderList().get(0), "name", "first header");
     assertEquals(table.getHeaderList().get(1), "jan", "second header");
     assertEquals(table.getHeaderList().get(12), "dec", "last header");
+
+    assertEquals(5, table.getRowList().size(), "Should be 5 observations");
+    assertEquals("Software", table.getValueAsString(0,0), "row 0 col 0");
+    assertEquals(-1200, table.getValueAsInteger(0,1), "row 0 col 1");
+
+    assertEquals("Sales", table.getValueAsString(4,0), "row 4 col 0");
+    assertEquals(33_000, table.getValueAsInteger(4,12), "row 4 col 12");
+
+    ListVector df = table.asDataFrame();
+    engine.put("extDf", df);
+
+    // TODO compare lineItems with extDf
+    engine.eval("print(summary(extDf))");
 
   }
 }

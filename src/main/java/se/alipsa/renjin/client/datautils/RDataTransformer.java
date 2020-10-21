@@ -28,6 +28,11 @@ public class RDataTransformer {
     return colList;
   }
 
+  public static List<DataType> toTypeList(ListVector df) {
+    //TODO: implement me!
+
+  }
+
   public static List<List<Object>> toRowlist(ListVector df) {
     List<Vector> table = new ArrayList<>();
     for (SEXP col : df) {
@@ -89,11 +94,11 @@ public class RDataTransformer {
   public static ListVector toDataFrame(Table table) {
     List<StringVector.Builder> builders = stringBuilders(table.headerList.size());
     int numRows = 0;
-    for (int rowIdx = 0; rowIdx <= table.rowList.size(); rowIdx++) {
+    for (int rowIdx = 0; rowIdx < table.rowList.size(); rowIdx++) {
       numRows++;
       List<Object> row = table.rowList.get(rowIdx);
       int i = 0;
-      for (int colIdx = 0; colIdx <= row.size(); colIdx++) {
+      for (int colIdx = 0; colIdx < row.size(); colIdx++) {
         //System.out.println("Adding ext.getString(" + rowIdx + ", " + colIdx+ ") = " + ext.getString(row, colIdx));
         builders.get(i++).add(String.valueOf(row.get(colIdx)));
       }

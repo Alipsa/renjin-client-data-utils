@@ -6,6 +6,7 @@ import org.renjin.sexp.*;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,8 +19,9 @@ import static se.alipsa.renjin.client.datautils.RDataTransformer.*;
  */
 public class Table {
 
-  List<String> headerList;
-  List<List<Object>> rowList;
+  List<String> headerList = new ArrayList<>();
+  List<List<Object>> rowList = new ArrayList<>();
+  List<DataType> columnTypes = new ArrayList<>();
 
   public static Table createTable(SEXP sexp) {
     String type = sexp.getTypeName();
@@ -53,23 +55,39 @@ public class Table {
 
   public Table(ListVector df) {
     headerList = toHeaderList(df);
+    columnTypes = toTypeList(df);
     rowList = toRowlist(df);
   }
 
-  public Table(List<String> columnList, List<List<Object>> rowList) {
+  public Table(List<String> columnList, List<List<Object>> rowList, List<DataType>... dataTypesOpt) {
     headerList = columnList;
     this.rowList = rowList;
+    if (dataTypesOpt.length > 0) {
+      columnTypes = dataTypesOpt[0];
+    } else {
+      for(int i = 0; i < columnList.size(); i++) {
+        columnTypes.add(null);
+      }
+    }
   }
 
   public Table(Matrix mat) {
+    if(mat.getVector() instanceof IntVector) {
+      for (int i = 0; i < mat.getNumCols(); i++) {
+        columnTypes.add(DataType.INTEGER);
+      }
+    } else if (mat.getVector() instanceof DoubleVector) {
+      for (int i = 0; i < mat.getNumCols(); i++) {
+        columnTypes.add(DataType.DOUBLE);
+      }
+    }
+    // No other types supported in Renjin at the moment
+
     String type = mat.getVector().getTypeName();
-    headerList = new ArrayList<>();
     for (int i = 0; i < mat.getNumCols(); i++) {
       String colName = mat.getColName(i) == null ? i + "" : mat.getColName(i);
       headerList.add(colName);
     }
-
-    rowList = new ArrayList<>();
 
     List<Object> row;
     for (int i = 0; i < mat.getNumRows(); i++) {
@@ -86,9 +104,8 @@ public class Table {
   }
 
   public Table(Vector vec) {
-    headerList = new ArrayList<>();
-    headerList.add(vec.getTypeName());
-
+    headerList.add(vec.getTypeName()); // TODO: should be name of the list, not the type name
+    columnTypes.add(DataType.forVectorType(vec.getVectorType()));
     List<Vector> values = new ArrayList<>();
     values.add(vec);
 
@@ -97,12 +114,13 @@ public class Table {
 
   public Table(ResultSet rs) throws SQLException {
     ResultSetMetaData rsmd = rs.getMetaData();
-    headerList = new ArrayList<>();
+
     int ncols = rsmd.getColumnCount();
+
     for (int i = 1; i <= ncols; i++) {
       headerList.add(rsmd.getColumnName(i));
+      columnTypes.add(DataType.forSqlType(rsmd.getColumnType(i)));
     }
-    rowList = new ArrayList<>();
     while (rs.next()) {
       List<Object> row = new ArrayList<>();
       for (int i = 1; i <= ncols; i++) {
@@ -129,4 +147,53 @@ public class Table {
   }
 
 
+  Object getValue(int row, int column) {
+    return rowList.get(row).get(column);
+  }
+
+  public String getValueAsString(int row, int column) {
+    return String.valueOf(getValue(row, column));
+  }
+
+  public Double getValueAsDouble(int row, int column) {
+    Object val = getValue(row, column);
+    if (val == null) {
+      return null;
+    }
+    if (val instanceof Double) {
+      return (Double)val;
+    }
+    return Double.parseDouble(String.valueOf(val));
+  }
+
+  public Boolean getValueAsBoolean(int row, int column) {
+    Object val = getValue(row, column);
+    if (val == null) {
+      return null;
+    }
+    if (val instanceof Boolean) {
+      return (Boolean) val;
+    }
+    switch (String.valueOf(val).toLowerCase()) {
+      case "true":
+      case "1":
+      case "on":
+      case "yes":
+        return Boolean.TRUE;
+      default:
+        return Boolean.FALSE;
+    }
+  }
+
+  public Integer getValueAsInteger(int row, int column) {
+    return getValueAsDouble(row, column).intValue();
+  }
+
+  public Long getValueAsLong(int row, int column) {
+    return getValueAsDouble(row, column).longValue();
+  }
+
+  public Float getValueAsFloat(int row, int column) {
+    return getValueAsDouble(row, column).floatValue();
+  }
 }
