@@ -64,7 +64,7 @@ public enum DataType {
       //case Types.VARBINARY:
       //  return DataType.BYTE_ARRAY;
       default:
-        return(null);
+        return null;
     }
   }
 

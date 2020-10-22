@@ -1,12 +1,12 @@
 package se.alipsa.renjin.client.datautils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.renjin.primitives.matrix.Matrix;
 import org.renjin.sexp.*;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -141,11 +141,11 @@ public class Table {
   }
 
   /**
-   *
+   * @param stringsOnlyOpt Optional param - if true, the resulting ListVector (data.frame) will consist of Strings (characters)
    * @return this table as a ListVector (data.frame) for easy handling in R
    */
-  public ListVector asDataFrame() {
-    return toDataFrame(this);
+  public ListVector asDataFrame(boolean... stringsOnlyOpt) {
+    return toDataFrame(this, stringsOnlyOpt);
   }
 
 
@@ -168,6 +168,7 @@ public class Table {
     return Double.parseDouble(String.valueOf(val));
   }
 
+  @SuppressFBWarnings("NP_BOOLEAN_RETURN_NULL")
   public Boolean getValueAsBoolean(int row, int column) {
     Object val = getValue(row, column);
     if (val == null) {

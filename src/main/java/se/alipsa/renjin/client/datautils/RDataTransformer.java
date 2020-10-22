@@ -7,6 +7,7 @@ import org.renjin.sexp.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 
 public class RDataTransformer {
 
@@ -71,9 +72,19 @@ public class RDataTransformer {
     }
   }
 
-  public static ListVector toDataFrame(Table table) {
-    //List<StringVector.Builder> builders = stringBuilders(table.headerList.size());
-    List<Vector.Builder<?>> builders = builders(table);
+  /**
+   *
+   * @param table the Table to convert
+   * @param stringsOnlyOpt if true, the resulting ListVector (data.frame) will consist of Strings (characters)
+   * @return
+   */
+  public static ListVector toDataFrame(Table table, boolean... stringsOnlyOpt) {
+    List<Vector.Builder<?>> builders;
+    if (stringsOnlyOpt.length > 0 && stringsOnlyOpt[0]) {
+      builders = stringBuilders(table.headerList.size());
+    } else {
+      builders = builders(table);
+    }
     int numRows = 0;
 
     for (int rowIdx = 0; rowIdx < table.rowList.size(); rowIdx++) {
@@ -83,19 +94,22 @@ public class RDataTransformer {
       for (int colIdx = 0; colIdx < row.size(); colIdx++) {
         //System.out.println("Adding ext.getString(" + rowIdx + ", " + colIdx+ ") = " + ext.getString(row, colIdx));
 
+        // Unfortunately Vector.Builder does not have an add(Object) method so we need to downcast
         Vector.Builder<?> builder = builders.get(i++);
-        if (builder instanceof IntArrayVector.Builder) {
-          ((IntArrayVector.Builder)builder).add(table.getValueAsInteger(rowIdx, colIdx));
+        Object value = row.get(colIdx);
+        if (value == null) {
+          builder.addNA();
+        } else if (builder instanceof IntArrayVector.Builder) {
+          ((IntArrayVector.Builder)builder).add(asInteger(value));
         } else if (builder instanceof LogicalArrayVector.Builder) {
-          ((LogicalArrayVector.Builder)builder).add(table.getValueAsBoolean(rowIdx, colIdx));
+          ((LogicalArrayVector.Builder)builder).add(asBoolean(value));
         } else if (builder instanceof DoubleArrayVector.Builder) {
-          ((DoubleArrayVector.Builder)builder).add(table.getValueAsDouble(rowIdx, colIdx));
+          ((DoubleArrayVector.Builder)builder).add(asDouble(value));
         } else if (builder instanceof StringVector.Builder) {
-          ((StringVector.Builder)builder).add(table.getValueAsString(rowIdx, colIdx));
+          ((StringVector.Builder)builder).add(asString(value));
         } else if (builder instanceof RawVector.Builder) {
-          ((RawVector.Builder)builder).add(table.getValueAsByte(rowIdx, colIdx));
+          ((RawVector.Builder)builder).add(asByte(value));
         }
-            //.add(String.valueOf(row.get(colIdx)));
       }
     }
     ListVector columnVector = columnInfo(table.headerList);
@@ -108,6 +122,39 @@ public class RDataTransformer {
     dfBuilder.setAttribute("row.names", new RowNamesVector(numRows));
     dfBuilder.setAttribute("class", StringVector.valueOf("data.frame"));
     return dfBuilder.build();
+  }
+
+  private static byte asByte(@Nonnull Object value) {
+    if (value instanceof Byte) {
+      return (Byte)value;
+    }
+    return Byte.parseByte(String.valueOf(value));
+  }
+
+  private static String asString(@Nonnull Object value) {
+    return String.valueOf(value);
+  }
+
+  private static double asDouble(@Nonnull Object value) {
+    if (value instanceof Double) {
+      return (Double)value;
+    }
+    return Double.parseDouble(String.valueOf(value));
+  }
+
+  private static boolean asBoolean(@Nonnull Object value) {
+    if (value instanceof Boolean) {
+      return (Boolean)value;
+    }
+    String stringValue = String.valueOf(value);
+    return "true".equalsIgnoreCase(stringValue) || "1".equalsIgnoreCase(stringValue);
+  }
+
+  private static int asInteger(@Nonnull Object value) {
+    if (value instanceof Integer) {
+      return (Integer)value;
+    }
+    return Integer.parseInt(String.valueOf(value));
   }
 
   private static ListVector columnInfo(List<String> headerList) {
@@ -131,8 +178,9 @@ public class RDataTransformer {
     return builderList;
   }
 
-  private static List<StringVector.Builder> stringBuilders(int numColNums) {
-    List<StringVector.Builder> builder = new ArrayList<>();
+
+  private static List<Vector.Builder<?>> stringBuilders(int numColNums) {
+    List<Vector.Builder<?>> builder = new ArrayList<>();
     for (int i = 0; i <= numColNums; i++) {
       builder.add(new StringVector.Builder());
     }
