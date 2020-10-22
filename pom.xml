@@ -11,12 +11,12 @@
     <packaging>jar</packaging>
 
     <name>renjin client data utililites</name>
-    <description>TODO: write a short description here</description>
-    <url>https://github.com/perNyfelt/rideutils</url>
+    <description>Utilities to facilitate working with R data from Renjin in Java.</description>
+    <url>https://github.com/perNyfelt/renjin-client-data-utils</url>
     <licenses>
         <license>
             <name>MIT License</name>
-            <url>https://raw.githubusercontent.com/perNyfelt/renjin-client-data-utils/master/LICENSE</url>
+            <url>https://raw.githubusercontent.com/perNyfelt/renjin-client-data-utils/main/LICENSE</url>
         </license>
     </licenses>
     <developers>
@@ -30,7 +30,7 @@
     <scm>
         <connection>scm:git:https://github.com/perNyfelt/renjin-client-data-utils.git</connection>
         <developerConnection>scm:git:git@github.com:perNyfelt/renjin-client-data-utils.git</developerConnection>
-        <url>https://github.com/perNyfelt/renjin-client-data-utils/tree/master</url>
+        <url>https://github.com/perNyfelt/renjin-client-data-utils/tree/main</url>
     </scm>
 
     <properties>
@@ -71,6 +71,12 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
+            <version>5.7.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
             <version>5.7.0</version>
             <scope>test</scope>
         </dependency>
@@ -175,11 +181,31 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>3.1.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.9.1</version>
             </plugin>
         </plugins>
     </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.2.0</version>
+            </plugin>
+        </plugins>
+    </reporting>
 
     <distributionManagement>
         <snapshotRepository>

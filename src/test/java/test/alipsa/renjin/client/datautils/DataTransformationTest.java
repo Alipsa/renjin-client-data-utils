@@ -22,6 +22,7 @@ public class DataTransformationTest {
 
   @BeforeAll
   static void init() throws ScriptException {
+    System.out.println("init(), creating lineItemsDf");
     String dfCode = "lineItems <- data.frame(\n" +
         "  name = character(),\n" +
         "  q1 = numeric(),\n" +
@@ -48,6 +49,7 @@ public class DataTransformationTest {
 
   @Test
   public void testToDataFrame() throws ScriptException {
+    assertNotNull(lineItemsDf, "lineItemsDf is null, something wrong with initialization");
     //engine.eval("str(lineItems); print(summary(lineItems))");
     Table table = new Table(lineItemsDf);
     //System.out.println(table.getColumnTypes());
@@ -111,6 +113,7 @@ public class DataTransformationTest {
 
   @Test
   public void testStringsOnlyTable() {
+    assertNotNull(lineItemsDf, "lineItemsDf is null, something wrong with initialization");
     Table table = new Table(lineItemsDf, true);
     int rowIdx = 0;
     for (List<Object> row : table.getRowList()) {

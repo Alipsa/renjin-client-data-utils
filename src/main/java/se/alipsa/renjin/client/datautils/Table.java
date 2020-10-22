@@ -149,7 +149,7 @@ public class Table {
    * @return this table as a ListVector (data.frame) for easy handling in R
    */
   public ListVector asDataFrame(boolean... stringsOnlyOpt) {
-    return toDataFrame(this, stringsOnlyOpt);
+    return toDataFrame(this, stringsOnlyOpt.length > 0 && stringsOnlyOpt[0]);
   }
 
 

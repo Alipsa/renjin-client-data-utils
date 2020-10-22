@@ -44,30 +44,38 @@ public class RDataTransformer {
     return typeList;
   }
 
-  public static List<List<Object>> toRowlist(ListVector df, boolean... contentAsStringsOpt) {
+  public static List<List<Object>> toRowlist(ListVector df) {
+    return toRowlist(df, false);
+  }
+
+  public static List<List<Object>> toRowlist(ListVector df, boolean contentAsStrings) {
     List<Vector> table = new ArrayList<>();
     for (SEXP col : df) {
       Vector column = (Vector) col;
       table.add(column);
     }
-    return transpose(table, contentAsStringsOpt);
+    return transpose(table, contentAsStrings);
   }
 
-  public static List<List<Object>> transpose(List<Vector> table, boolean... contentAsStringsOpt) {
+
+  public static List<List<Object>> transpose(List<Vector> table) {
+    return transpose(table, false);
+  }
+
+  public static List<List<Object>> transpose(List<Vector> table, boolean contentAsStrings) {
     List<List<Object>> ret = new ArrayList<>();
     final int N = table.get(0).length();
     for (int i = 0; i < N; i++) {
       List<Object> row = new ArrayList<>();
       for (Vector col : table) {
-        addValue(col, row, i, contentAsStringsOpt);
+        addValue(col, row, i, contentAsStrings);
       }
       ret.add(row);
     }
     return ret;
   }
 
-  private static void addValue(Vector col, List<Object> column, int i, boolean... contentAsStringsOpt) {
-    boolean contentAsStrings = contentAsStringsOpt.length > 0 && contentAsStringsOpt[0];
+  private static void addValue(Vector col, List<Object> column, int i, boolean contentAsStrings) {
     if (Types.isFactor(col)) {
       AttributeMap attributes = col.getAttributes();
       Map<Symbol, SEXP> attrMap = attributes.toMap();
@@ -90,12 +98,21 @@ public class RDataTransformer {
   /**
    *
    * @param table the Table to convert
-   * @param stringsOnlyOpt if true, the resulting ListVector (data.frame) will consist of Strings (characters)
-   * @return
+   * @return a ListVector (data.frame) corresponding to the Table
    */
-  public static ListVector toDataFrame(Table table, boolean... stringsOnlyOpt) {
+  public static ListVector toDataFrame(Table table) {
+    return toDataFrame(table, false);
+  }
+
+  /**
+   *
+   * @param table the Table to convert
+   * @param stringsOnly if true, the resulting ListVector (data.frame) will consist of Strings (characters)
+   * @return a ListVector (data.frame) corresponding to the Table
+   */
+  public static ListVector toDataFrame(Table table, boolean stringsOnly) {
     List<Vector.Builder<?>> builders;
-    if (stringsOnlyOpt.length > 0 && stringsOnlyOpt[0]) {
+    if (stringsOnly) {
       builders = stringBuilders(table.headerList.size());
     } else {
       builders = builders(table);
