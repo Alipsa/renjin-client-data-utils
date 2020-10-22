@@ -29,11 +29,17 @@ public class RDataTransformer {
     return colList;
   }
 
-  public static List<DataType> toTypeList(ListVector df) {
-    List<DataType> typeList = new ArrayList<>();
-    for (SEXP col : df) {
-      Vector column = (Vector) col;
-      typeList.add(DataType.forVectorType(column.getVectorType()));
+  public static List<DataType> toTypeList(ListVector df, boolean... stringsOnlyOpt) {
+    List<DataType> typeList = new ArrayList<>(df.length());
+    if (stringsOnlyOpt.length > 0 && stringsOnlyOpt[0]) {
+      for ( int i = 0; i < df.length(); i++) {
+        typeList.add(DataType.STRING);
+      }
+    } else {
+      for (SEXP col : df) {
+        Vector column = (Vector) col;
+        typeList.add(DataType.forVectorType(column.getVectorType()));
+      }
     }
     return typeList;
   }
@@ -53,14 +59,14 @@ public class RDataTransformer {
     for (int i = 0; i < N; i++) {
       List<Object> row = new ArrayList<>();
       for (Vector col : table) {
-        getValue(col, row, i);
+        addValue(col, row, i);
       }
       ret.add(row);
     }
     return ret;
   }
 
-  private static void getValue(Vector col, List<Object> column, int i) {
+  private static void addValue(Vector col, List<Object> column, int i) {
     if (Types.isFactor(col)) {
       AttributeMap attributes = col.getAttributes();
       Map<Symbol, SEXP> attrMap = attributes.toMap();
@@ -109,6 +115,8 @@ public class RDataTransformer {
           ((StringVector.Builder)builder).add(asString(value));
         } else if (builder instanceof RawVector.Builder) {
           ((RawVector.Builder)builder).add(asByte(value));
+        } else {
+          throw new DataTransformationRuntimeException(RDataTransformer.class + ".toDataFrame(): Unknown Builder type: " + builder.getClass());
         }
       }
     }

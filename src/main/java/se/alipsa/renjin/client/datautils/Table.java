@@ -54,8 +54,12 @@ public class Table {
   }
 
   public Table(ListVector df) {
+    this(df, false);
+  }
+
+  public Table(ListVector df, boolean stringsOnlyOpt) {
     headerList = toHeaderList(df);
-    columnTypes = toTypeList(df);
+    columnTypes = toTypeList(df, stringsOnlyOpt);
     rowList = toRowlist(df);
   }
 
