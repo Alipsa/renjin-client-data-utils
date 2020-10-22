@@ -149,12 +149,16 @@ public class Table {
   }
 
 
-  Object getValue(int row, int column) {
+  public Object getValue(int row, int column) {
     return rowList.get(row).get(column);
   }
 
   public String getValueAsString(int row, int column) {
-    return String.valueOf(getValue(row, column));
+    Object val = getValue(row, column);
+    if (val == null) {
+      return null;
+    }
+    return String.valueOf(val);
   }
 
   public Double getValueAsDouble(int row, int column) {
@@ -171,7 +175,7 @@ public class Table {
   @SuppressFBWarnings("NP_BOOLEAN_RETURN_NULL")
   public Boolean getValueAsBoolean(int row, int column) {
     Object val = getValue(row, column);
-    if (val == null) {
+    if (val == null || val instanceof Double && Double.isNaN((Double)val)) {
       return null;
     }
     if (val instanceof Boolean) {
@@ -189,15 +193,21 @@ public class Table {
   }
 
   public Integer getValueAsInteger(int row, int column) {
-    return getValueAsDouble(row, column).intValue();
+    Double val = getValueAsDouble(row, column);
+    if (val == null || Double.isNaN(val)) {
+      return null;
+    }
+    return val.intValue();
   }
 
   public Long getValueAsLong(int row, int column) {
-    return getValueAsDouble(row, column).longValue();
+    Double val = getValueAsDouble(row, column);
+    return val == null ? null : val.longValue();
   }
 
   public Float getValueAsFloat(int row, int column) {
-    return getValueAsDouble(row, column).floatValue();
+    Double val = getValueAsDouble(row, column);
+    return val == null ? null : val.floatValue();
   }
 
   public Byte getValueAsByte(int rowIdx, int colIdx) {
@@ -205,6 +215,6 @@ public class Table {
     if (val instanceof Byte) {
       return (Byte)val;
     }
-    return Byte.valueOf(String.valueOf(val));
+    return val == null ? null : Byte.valueOf(String.valueOf(val));
   }
 }

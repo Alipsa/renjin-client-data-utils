@@ -11,6 +11,7 @@ import se.alipsa.renjin.client.datautils.Table;
 import javax.script.ScriptException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class DataTransformationTest {
 
@@ -29,7 +30,7 @@ public class DataTransformationTest {
         ")\n" +
         "lineItems[1, ] <- list('Software', -1200, 0, 0 , 0, -4.02, TRUE)\n" +
         "lineItems[2, ] <- list('Computer hardware', 0, 0, -33000 , 0 , 3.14, FALSE)\n" +
-        "lineItems[3, ] <- list('Admin staff', -7000, -7000, -7000 , -7000, 12.123, TRUE)\n" +
+        "lineItems[3, ] <- list(NA, NA, -7000, -7000 , -7000, 12.123, TRUE)\n" +
         "lineItems[4, ] <- list('Dev staff', -12000, -12000, -12000 , -12000, 0.01, TRUE )\n" +
         "lineItems[5, ] <- list('Sales', 22000, 22000, 42000 , 25000, 56.1, FALSE )\n" +
         "lineItems";
@@ -38,7 +39,10 @@ public class DataTransformationTest {
     RenjinScriptEngine engine = factory.getScriptEngine(session);
     ListVector lineItemsDf = (ListVector)engine.eval(dfCode);
 
+    //engine.eval("str(lineItems); print(summary(lineItems))");
     Table table = new Table(lineItemsDf);
+    //System.out.println(table.getColumnTypes());
+    //table.getRowList().forEach(System.out::println);
 
     assertEquals(7, table.getHeaderList().size(), "Number of columns in header");
     assertEquals(table.getHeaderList().get(0), "name", "first header");
@@ -48,16 +52,50 @@ public class DataTransformationTest {
     assertEquals(5, table.getRowList().size(), "Should be 5 observations");
     assertEquals("Software", table.getValueAsString(0,0), "row 0 col 0");
     assertEquals(-1200, table.getValueAsInteger(0,1), "row 0 col 1");
+    assertEquals(true, table.getValueAsBoolean(0,6), "row 0 col 6");
+
+    assertNull(table.getValue(2, 0), "row 2 col 0");
+    assertNull(table.getValueAsString(2,0), "row 2 col 0");
+
+    assertNull(table.getValueAsInteger(2, 1), "row 2 col 1");
+    assertEquals(Double.NaN, table.getValueAsDouble(2,1), "row 2 col 1");
+    assertEquals(Double.NaN, table.getValue(2,1), "row 2 col 1");
+    assertEquals(Float.NaN, table.getValueAsFloat(2,1), "row 2 col 1");
 
     assertEquals("Sales", table.getValueAsString(4,0), "row 4 col 0");
     assertEquals(false, table.getValueAsBoolean(4,6), "row 4 col 6");
 
-    System.out.println(table.getColumnTypes());
     ListVector df = table.asDataFrame();
     engine.put("extDf", df);
 
-    // TODO compare lineItems with extDf
-    engine.eval("str(extDf); print(summary(extDf))");
+    //engine.eval("print(paste('extDf[4, 2]) =', extDf[4, 2]))");
+    //engine.eval("str(extDf); print(summary(extDf))");
+    // compare lineItems with extDf
+    String compareScript =
+        "library('hamcrest') \n"
+        + "assertThat(names(extDf), equalTo(names(lineItems))) \n"
+        + "assertThat(ncol(extDf), equalTo(ncol(lineItems))) \n"
+        + "assertThat(nrow(extDf), equalTo(nrow(lineItems))) \n"
+        + "for ( col in 1:ncol(extDf) ) { \n"
+        + "  for ( row in 1:nrow(extDf) ) { \n"
+        + "    # print(paste0('extDf[', row, ',', col, '] = ', extDf[row, col], ', lineItems[', row, ',', col,'] = ', lineItems[row,col])) \n"
+        + "    if (is.na(extDf[row, col])) { \n"
+        + "      if(!is.na(lineItems[row,col])) { \n"
+        + "        stop(paste0('row ', row, ', col ', col, ' (', names(extDf)[col], '), Expected NA but was ', extDf[row, col])) \n"
+        + "      } \n"
+        + "    } \n"
+        + "    if (is.na(lineItems[row, col])) { \n"
+        + "      if(!is.na(extDf[row,col])) { \n"
+        + "        stop(paste0('row ', row, ' ,col ', col, ' (', names(extDf)[col], '), Expected ', extDf[row,col], ', but was NA')) \n"
+        + "      } \n"
+        + "    } \n"
+        + "    if (!is.na(extDf[row,col]) && !is.na(lineItems[row,col]) && extDf[row, col] != lineItems[row,col]) { \n"
+        + "      stop(paste0('row ', row, ', col ', col, ' (', names(extDf)[col], '), Expected ', lineItems[row,col], ', but was ', extDf[row, col])) \n"
+        + "    } \n"
+        + "  } \n"
+        + "}";
+
+    engine.eval(compareScript);
 
   }
 }

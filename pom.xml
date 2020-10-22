@@ -80,6 +80,12 @@
             <version>2.2</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.renjin</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>${renjin.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <repositories>
