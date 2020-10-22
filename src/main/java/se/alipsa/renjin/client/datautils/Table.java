@@ -57,10 +57,10 @@ public class Table {
     this(df, false);
   }
 
-  public Table(ListVector df, boolean stringsOnlyOpt) {
+  public Table(ListVector df, boolean contentAsStrings) {
     headerList = toHeaderList(df);
-    columnTypes = toTypeList(df, stringsOnlyOpt);
-    rowList = toRowlist(df);
+    columnTypes = toTypeList(df, contentAsStrings);
+    rowList = toRowlist(df, contentAsStrings);
   }
 
   public Table(List<String> columnList, List<List<Object>> rowList, List<DataType>... dataTypesOpt) {

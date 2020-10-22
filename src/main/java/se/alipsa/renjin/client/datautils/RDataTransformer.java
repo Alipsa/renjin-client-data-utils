@@ -44,37 +44,46 @@ public class RDataTransformer {
     return typeList;
   }
 
-  public static List<List<Object>> toRowlist(ListVector df) {
+  public static List<List<Object>> toRowlist(ListVector df, boolean... contentAsStringsOpt) {
     List<Vector> table = new ArrayList<>();
     for (SEXP col : df) {
       Vector column = (Vector) col;
       table.add(column);
     }
-    return transpose(table);
+    return transpose(table, contentAsStringsOpt);
   }
 
-  public static List<List<Object>> transpose(List<Vector> table) {
+  public static List<List<Object>> transpose(List<Vector> table, boolean... contentAsStringsOpt) {
     List<List<Object>> ret = new ArrayList<>();
     final int N = table.get(0).length();
     for (int i = 0; i < N; i++) {
       List<Object> row = new ArrayList<>();
       for (Vector col : table) {
-        addValue(col, row, i);
+        addValue(col, row, i, contentAsStringsOpt);
       }
       ret.add(row);
     }
     return ret;
   }
 
-  private static void addValue(Vector col, List<Object> column, int i) {
+  private static void addValue(Vector col, List<Object> column, int i, boolean... contentAsStringsOpt) {
+    boolean contentAsStrings = contentAsStringsOpt.length > 0 && contentAsStringsOpt[0];
     if (Types.isFactor(col)) {
       AttributeMap attributes = col.getAttributes();
       Map<Symbol, SEXP> attrMap = attributes.toMap();
       Symbol s = attrMap.keySet().stream().filter(p -> "levels".equals(p.getPrintName())).findAny().orElse(null);
       Vector vec = (Vector) attrMap.get(s);
-      column.add(vec.getElementAsObject(col.getElementAsInt(i) - 1));
+      if (contentAsStrings) {
+        column.add(vec.getElementAsString(col.getElementAsInt(i) - 1));
+      } else {
+        column.add(vec.getElementAsObject(col.getElementAsInt(i) - 1));
+      }
     } else {
-      column.add(col.getElementAsObject(i));
+      if (contentAsStrings) {
+        column.add(col.getElementAsString(i));
+      } else {
+        column.add(col.getElementAsObject(i));
+      }
     }
   }
 
