@@ -7,6 +7,11 @@ import org.renjin.sexp.*;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +53,7 @@ public class Table {
         return new Table(vec);
       }
     } else {
-      throw new IllegalArgumentException("Unknown type, " + type + " ( class: " + sexp.getClass()
+      throw new DataTransformationRuntimeException("Unknown type, " + type + " ( class: " + sexp.getClass()
           + "), convert this object to a data.frame or vector to use it");
     }
   }
@@ -148,8 +153,8 @@ public class Table {
    * @param stringsOnlyOpt Optional param - if true, the resulting ListVector (data.frame) will consist of Strings (characters)
    * @return this table as a ListVector (data.frame) for easy handling in R
    */
-  public ListVector asDataFrame(boolean... stringsOnlyOpt) {
-    return toDataFrame(this, stringsOnlyOpt.length > 0 && stringsOnlyOpt[0]);
+  public ListVector asDataframe(boolean... stringsOnlyOpt) {
+    return toDataframe(this, stringsOnlyOpt.length > 0 && stringsOnlyOpt[0]);
   }
 
 
@@ -220,5 +225,44 @@ public class Table {
       return (Byte)val;
     }
     return val == null ? null : Byte.valueOf(String.valueOf(val));
+  }
+
+  public LocalDate getValueAsLocalDate(int rowIdx, int colIdx) {
+    return getValueAsLocalDate(rowIdx, colIdx, "yyyy-MM-dd");
+  }
+
+  public LocalDate getValueAsLocalDate(int rowIdx, int colIdx, String format) {
+    Object val = getValue(rowIdx, colIdx);
+    if (val == null) {
+      return null;
+    }
+    if (val instanceof Double) {
+      return LocalDate.ofEpochDay(((Double)val).longValue());
+    } else {
+      return LocalDate.parse(String.valueOf(val), DateTimeFormatter.ofPattern(format));
+    }
+  }
+
+  public LocalDateTime getValueAsLocalDateTime(int rowIdx, int colIdx) {
+    return getValueAsLocalDateTime(rowIdx, colIdx, OffsetDateTime.now().getOffset());
+  }
+
+  public LocalDateTime getValueAsLocalDateTime(int rowIdx, int colIdx, ZoneOffset offset) {
+    Object val = getValue(rowIdx, colIdx);
+    if (val == null) {
+      return null;
+    }
+    if (val instanceof Double) {
+      long longVal = ((Double)val).longValue();
+      return LocalDateTime.ofEpochSecond(longVal, 0, offset);
+    } else {
+      String strVal = String.valueOf(val);
+      if (strVal.length() == 10 ) {
+        return LocalDateTime.parse(strVal, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+      } else if (strVal.length() == 19) {
+        return LocalDateTime.parse(strVal, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+      }
+      throw new IllegalArgumentException("Unknown date time format for " + strVal);
+    }
   }
 }

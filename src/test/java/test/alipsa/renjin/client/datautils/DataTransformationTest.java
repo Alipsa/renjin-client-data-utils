@@ -78,7 +78,7 @@ public class DataTransformationTest {
     assertEquals("Sales", table.getValueAsString(4,0), "row 5 col 1");
     assertEquals(false, table.getValueAsBoolean(4,6), "row 5 col 7");
 
-    ListVector df = table.asDataFrame();
+    ListVector df = table.asDataframe();
     engine.put("extDf", df);
 
     //engine.eval("print(paste('extDf[4, 2]) =', extDf[4, 2]))");

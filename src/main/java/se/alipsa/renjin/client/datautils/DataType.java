@@ -75,4 +75,9 @@ public enum DataType {
   public Vector.Type getVectorType() {
     return vectorType;
   }
+
+  @Override
+  public String toString() {
+    return name() + " (" + rtypeName + ")";
+  }
 }

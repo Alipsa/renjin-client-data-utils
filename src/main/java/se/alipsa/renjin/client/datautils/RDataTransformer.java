@@ -100,8 +100,8 @@ public class RDataTransformer {
    * @param table the Table to convert
    * @return a ListVector (data.frame) corresponding to the Table
    */
-  public static ListVector toDataFrame(Table table) {
-    return toDataFrame(table, false);
+  public static ListVector toDataframe(Table table) {
+    return toDataframe(table, false);
   }
 
   /**
@@ -110,7 +110,7 @@ public class RDataTransformer {
    * @param stringsOnly if true, the resulting ListVector (data.frame) will consist of Strings (characters)
    * @return a ListVector (data.frame) corresponding to the Table
    */
-  public static ListVector toDataFrame(Table table, boolean stringsOnly) {
+  public static ListVector toDataframe(Table table, boolean stringsOnly) {
     List<Vector.Builder<?>> builders;
     if (stringsOnly) {
       builders = stringBuilders(table.headerList.size());
