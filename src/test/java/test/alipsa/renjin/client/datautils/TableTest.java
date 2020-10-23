@@ -14,7 +14,7 @@ import javax.script.ScriptException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.OffsetDateTime;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -78,5 +78,6 @@ public class TableTest {
     assertThat(table.getValueAsLocalDate(2, 2), equalTo(LocalDate.of(2017, 3, 14)));
     LocalDateTime expected = LocalDateTime.of(2020, 10, 6, 10, 0, 5);
     assertThat(table.getValueAsLocalDateTime(2, 3), equalTo(expected));
+    assertThat(table.getValueAsLong(2, 3), equalTo(expected.toEpochSecond(OffsetDateTime.now().getOffset())));
   }
 }
