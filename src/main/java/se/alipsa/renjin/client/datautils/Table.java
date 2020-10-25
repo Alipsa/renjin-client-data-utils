@@ -9,7 +9,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -27,6 +26,10 @@ public class Table {
   List<String> headerList = new ArrayList<>();
   List<List<Object>> rowList = new ArrayList<>();
   List<DataType> columnTypes = new ArrayList<>();
+
+  public Table() {
+    // Empty
+  }
 
   public static Table createTable(SEXP sexp) {
     String type = sexp.getTypeName();
@@ -244,7 +247,7 @@ public class Table {
   }
 
   public LocalDateTime getValueAsLocalDateTime(int rowIdx, int colIdx) {
-    return getValueAsLocalDateTime(rowIdx, colIdx, OffsetDateTime.now().getOffset());
+    return getValueAsLocalDateTime(rowIdx, colIdx, ZoneOffset.UTC);
   }
 
   public LocalDateTime getValueAsLocalDateTime(int rowIdx, int colIdx, ZoneOffset offset) {
@@ -254,6 +257,7 @@ public class Table {
     }
     if (val instanceof Double) {
       long longVal = ((Double)val).longValue();
+      System.out.println("LocalDateTime from " + longVal + ", offset = " + offset);
       return LocalDateTime.ofEpochSecond(longVal, 0, offset);
     } else {
       String strVal = String.valueOf(val);
