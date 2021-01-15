@@ -40,7 +40,7 @@ public class Example {
   }
 }
 ```
-... the following assertions would be valid for the Table:
+... the following assertions would be valid for the Table returned by the getData() method:
 ```javascript
 assertThat(table.getValue(0, 0), equalTo("John Doe"));
 assertThat(table.getValue(1, 1), equalTo(23400.0));
