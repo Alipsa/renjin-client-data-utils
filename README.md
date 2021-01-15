@@ -1,13 +1,22 @@
 # renjin-client-data-utils
 Utilities to facilitate working with R data from Renjin in Java
 
+To use it add the following dependency to your pom.xml:
+```xml
+<dependency>
+    <groupId>se.alipsa</groupId>
+    <artifactId>renjin-client-data-utils</artifactId>
+    <version>1.1</version>
+</dependency>
+```
+
 ## se.alipsa.renjin.client.datautils.Table
 The Table class makes it easy to interact with R data.frame and matrix data.
 Data frames in R are "column based" (variable based) which is very convenient for analysis but Java is
-Object / Observation based so a Table which essentially is just a List of rows (observations), makes is much easier
+Object / Observation based, so a Table which essentially is just a List of rows (observations), makes is much easier
 to work with the data in Java.
 
-Example:
+### Example:
 
 Given the following R code:
 ```r
