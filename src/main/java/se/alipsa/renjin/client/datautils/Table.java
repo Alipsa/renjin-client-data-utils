@@ -140,12 +140,43 @@ public class Table {
     }
   }
 
+  public Table asTransposed() {
+    return new Table(headerList, getColumnList(), columnTypes);
+  }
+
+  public List<List<Object>> getColumnList() {
+    List<List<Object>> columnList = new ArrayList<>();
+    for (List<Object> row : rowList) {
+      if (columnList.size() == 0) {
+        for (int i = 0; i < row.size(); i++) {
+          columnList.add(new ArrayList<>());
+        }
+      }
+      for (int j = 0; j < row.size(); j++) {
+        columnList.get(j).add(row.get(j));
+      }
+    }
+    return columnList;
+  }
+
   public List<String> getHeaderList() {
     return headerList;
   }
 
+  public int getHeaderSize() {
+    return headerList.size();
+  }
+
   public List<List<Object>> getRowList() {
     return rowList;
+  }
+
+  public int getRowSize() {
+    return rowList.size();
+  }
+
+  public List<Object> getRow(int index) {
+    return rowList.get(index);
   }
 
   public List<DataType> getColumnTypes() {
@@ -257,7 +288,7 @@ public class Table {
     }
     if (val instanceof Double) {
       long longVal = ((Double)val).longValue();
-      System.out.println("LocalDateTime from " + longVal + ", offset = " + offset);
+      //System.out.println("LocalDateTime from " + longVal + ", offset = " + offset);
       return LocalDateTime.ofEpochSecond(longVal, 0, offset);
     } else {
       String strVal = String.valueOf(val);
@@ -268,5 +299,10 @@ public class Table {
       }
       throw new IllegalArgumentException("Unknown date time format for " + strVal);
     }
+  }
+
+  @Override
+  public String toString() {
+    return "Table with " + getHeaderSize() + " columns and " + getRowSize() + " rows";
   }
 }
