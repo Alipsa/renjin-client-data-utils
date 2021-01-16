@@ -56,7 +56,25 @@ assertThat(table.getValue(1, 1), equalTo(23400.0));
 assertThat(table.getValueAsLocalDate(2, 2), equalTo(LocalDate.of(2017, 3, 14)));
 assertThat(table.getValueAsLocalDateTime(2, 3), equalTo(LocalDateTime.of(2020, 10, 6, 10, 0, 5)));
 ```
+See [TableTest](src/test/java/test/alipsa/renjin/client/datautils/TableTest.java) for more examples. 
 
-See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/DataTransformationTest.java)
-and [TableTest](src/test/java/test/alipsa/renjin/client/datautils/TableTest.java) for more examples.
+## se.alipsa.renjin.client.datautils.RDataTransformer
 
+This is a utility class that transforms various R data types into Java.
+In many ways it is similar to the Table class but allows for more atomic operations
+useful when you only want the result in a particular way once.
+
+See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/DataTransformationTest.java) for examples.
+
+# Version history
+
+### 1.2-SNAPSHOT
+- Add docs
+- cleanup and expand tests
+
+### 1.1
+- Add some utility methods, so we can remove the Ride version of the same class.
+- Add docs
+
+### 1.0 
+- Initial version

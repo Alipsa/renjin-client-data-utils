@@ -7,13 +7,14 @@ import org.renjin.eval.SessionBuilder;
 import org.renjin.script.RenjinScriptEngine;
 import org.renjin.script.RenjinScriptEngineFactory;
 import org.renjin.sexp.ListVector;
+import se.alipsa.renjin.client.datautils.RDataTransformer;
 import se.alipsa.renjin.client.datautils.Table;
 
 import javax.script.ScriptException;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
+import static se.alipsa.renjin.client.datautils.RDataTransformer.toHeaderList;
+import static se.alipsa.renjin.client.datautils.RDataTransformer.toRowlist;
 
 public class DataTransformationTest {
 
@@ -50,35 +51,15 @@ public class DataTransformationTest {
   @Test
   public void testToDataFrame() throws ScriptException {
     assertNotNull(lineItemsDf, "lineItemsDf is null, something wrong with initialization");
-    //engine.eval("str(lineItems); print(summary(lineItems))");
-    Table table = new Table(lineItemsDf);
-    //System.out.println(table.getColumnTypes());
-    //table.getRowList().forEach(System.out::println);
 
-    assertEquals(7, table.getHeaderList().size(), "Number of columns in header");
-    assertEquals(table.getHeaderList().get(0), "name", "first header");
-    assertEquals(table.getHeaderList().get(1), "q1", "second header");
-    assertEquals(table.getHeaderList().get(6), "isValid", "last header");
+    assertEquals(7, toHeaderList(lineItemsDf).size(), "Number of columns in header");
+    assertEquals(toHeaderList(lineItemsDf).get(0), "name", "first header");
+    assertEquals(toHeaderList(lineItemsDf).get(1), "q1", "second header");
+    assertEquals(toHeaderList(lineItemsDf).get(6), "isValid", "last header");
 
-    assertEquals(5, table.getRowList().size(), "Should be 5 observations");
-    assertEquals("Software", table.getValueAsString(0,0), "row 1 col 1");
-    assertEquals(-1200, table.getValueAsInteger(0,1), "row 1 col 2");
-    assertEquals(true, table.getValueAsBoolean(0,6), "row 1 col 7");
+    assertEquals(5, toRowlist(lineItemsDf).size(), "Should be 5 observations");
 
-    assertNull(table.getValue(2, 0), "row 3 col 1");
-    assertNull(table.getValueAsString(2,0), "row 3 col 1");
-
-    assertNull(table.getValueAsInteger(2, 1), "row 3 col 2");
-    assertEquals(Double.NaN, table.getValueAsDouble(2,1), "row 3 col 2");
-    assertEquals(Double.NaN, table.getValue(2,1), "row 3 col 2");
-    assertEquals(Float.NaN, table.getValueAsFloat(2,1), "row 3 col 2");
-
-    assertEquals(-9000, table.getValue(3,2), "row 4 col 3, " + table.getValue(3,2).getClass());
-
-    assertEquals("Sales", table.getValueAsString(4,0), "row 5 col 1");
-    assertEquals(false, table.getValueAsBoolean(4,6), "row 5 col 7");
-
-    ListVector df = table.asDataframe();
+    ListVector df = Table.createTable(lineItemsDf).asDataframe();
     engine.put("extDf", df);
 
     //engine.eval("print(paste('extDf[4, 2]) =', extDf[4, 2]))");
@@ -111,46 +92,4 @@ public class DataTransformationTest {
     engine.eval(compareScript);
   }
 
-  @Test
-  public void testStringsOnlyTable() {
-    assertNotNull(lineItemsDf, "lineItemsDf is null, something wrong with initialization");
-    Table table = new Table(lineItemsDf, true);
-    int rowIdx = 0;
-    for (List<Object> row : table.getRowList()) {
-      rowIdx++;
-      int colIdx = 0;
-      for (Object val : row) {
-        colIdx++;
-        if (val != null) {
-          assertTrue(val instanceof String, "Row " + rowIdx + ", col " + colIdx + " is not a String but a " + val.getClass());
-        }
-      }
-    }
-    assertEquals(7, table.getHeaderList().size(), "Number of columns in header");
-    assertEquals(table.getHeaderList().get(0), "name", "first header");
-    assertEquals(table.getHeaderList().get(2), "q2", "third header");
-    assertEquals(table.getHeaderList().get(6), "isValid", "last header");
-
-    assertEquals(5, table.getRowList().size(), "Should be 5 observations");
-    assertEquals("Software", table.getValueAsString(0,0), "row 1 col 1");
-    assertEquals("-1200", table.getValue(0,1), "row 1 col 2");
-    assertEquals(true, table.getValueAsBoolean(0,6), "row 1 col 7");
-    assertEquals("TRUE", table.getValue(0,6), "row 1 col 7");
-
-    assertNull(table.getValue(2, 0), "row 3 col 1");
-    assertNull(table.getValueAsString(2,0), "row 3 col 1");
-
-    assertNull(table.getValueAsString(2, 1), "row 3 col 2");
-    assertNull(table.getValue(2, 1), "row 3 col 2");
-
-    assertEquals("0.01", table.getValue(3,5), "row 4 col 6");
-    assertEquals(0.01, table.getValueAsDouble(3,5), "row 4 col 6");
-
-    assertEquals("Sales", table.getValueAsString(4,0), "row 5 col 1");
-    assertEquals("22000", table.getValue(4,2), "row 5 col 3");
-    assertEquals("FALSE", table.getValue(4,6), "row 5 col 7");
-    assertEquals(false, table.getValueAsBoolean(4,6), "row 5 col 7");
-
-
-  }
 }
