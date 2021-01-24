@@ -71,6 +71,7 @@ See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/D
 ### 1.2-SNAPSHOT
 - Add docs
 - cleanup and expand tests
+- add @SafeVarargs to Table constructor to silence compiler warning which does not apply
 
 ### 1.1
 - Add some utility methods, so we can remove the Ride version of the same class.

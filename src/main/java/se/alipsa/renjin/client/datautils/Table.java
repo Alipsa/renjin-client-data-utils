@@ -71,6 +71,7 @@ public class Table {
     rowList = toRowlist(df, contentAsStrings);
   }
 
+  @SafeVarargs
   public Table(List<String> columnList, List<List<Object>> rowList, List<DataType>... dataTypesOpt) {
     headerList = columnList;
     this.rowList = rowList;
