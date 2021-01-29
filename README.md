@@ -68,10 +68,11 @@ See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/D
 
 # Version history
 
-### 1.2-SNAPSHOT
+### 1.2
 - Add docs
 - cleanup and expand tests
 - add @SafeVarargs to Table constructor to silence compiler warning which does not apply
+- add getRowForName providing the ability to find a row based on a cell value
 
 ### 1.1
 - Add some utility methods, so we can remove the Ride version of the same class.

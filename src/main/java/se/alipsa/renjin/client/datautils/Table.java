@@ -180,6 +180,23 @@ public class Table {
     return rowList.get(index);
   }
 
+  /**
+   * Find the first row based on a cell value specified
+   * Note: Overloading methods does not work in Birt (Rhino), must use a unique name for each method so cannot name it getRow
+   * @param value the cell value to search for
+   * @param column the column index to look in, defaults to 0 (first column)
+   * @return the row as a List of Objects or null if no row found
+   */
+  public List<Object> getRowForName(String value, int... column) {
+    int col = column.length == 0 ? 0 : column[0];
+    for (List<Object> row : rowList) {
+      if (value.equals(row.get(col))) {
+        return row;
+      }
+    }
+    return null;
+  }
+
   public List<DataType> getColumnTypes() {
     return columnTypes;
   }
