@@ -69,7 +69,7 @@ See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/D
 # Version history
 
 ### 1.3-SNAPSHOT
-(nothing yet)
+- add column convenience methods (getColumnForName, getColumnIndex, getColumn)
 
 ### 1.2
 - Add docs

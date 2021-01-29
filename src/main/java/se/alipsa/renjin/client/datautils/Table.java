@@ -201,6 +201,28 @@ public class Table {
     return columnTypes;
   }
 
+  public List<Object> getColumnForName(String name) {
+    int index = -1;
+    for (int i = 0; i < headerList.size(); i++) {
+      if (name.equals(headerList.get(i))) {
+        index = i;
+        break;
+      }
+    }
+    return getColumnList().get(index);
+  }
+
+  public int getColumnIndex(String colName) {
+    for (int colIdx = 0; colIdx < headerList.size(); colIdx++) {
+      if (headerList.get(colIdx).equals(colName)) return colIdx;
+    }
+    return -1;
+  }
+
+  public List<Object> getColumn(int index) {
+    return getColumnList().get(index);
+  }
+
   /**
    * @param stringsOnlyOpt Optional param - if true, the resulting ListVector (data.frame) will consist of Strings (characters)
    * @return this table as a ListVector (data.frame) for easy handling in R
