@@ -6,7 +6,7 @@ To use it add the following dependency to your pom.xml:
 <dependency>
     <groupId>se.alipsa</groupId>
     <artifactId>renjin-client-data-utils</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
 </dependency>
 ```
 
@@ -67,6 +67,9 @@ useful when you only want the result in a particular way once.
 See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/DataTransformationTest.java) for examples.
 
 # Version history
+
+### 1.3-SNAPSHOT
+(nothing yet)
 
 ### 1.2
 - Add docs
