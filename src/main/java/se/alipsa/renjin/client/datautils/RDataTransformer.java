@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 
+/**
+ * Simple transformations of Renjin R data into OOTB java collections and similar
+ */
 public class RDataTransformer {
 
   private RDataTransformer() {
@@ -113,40 +116,37 @@ public class RDataTransformer {
   public static ListVector toDataframe(Table table, boolean stringsOnly) {
     List<Vector.Builder<?>> builders;
     if (stringsOnly) {
-      builders = stringBuilders(table.headerList.size());
+      builders = stringBuilders(table.getHeaderSize());
     } else {
       builders = builders(table);
     }
     int numRows = 0;
 
-    for (int rowIdx = 0; rowIdx < table.rowList.size(); rowIdx++) {
+    for (int rowIdx = 0; rowIdx < table.getRowSize(); rowIdx++) {
       numRows++;
-      List<Object> row = table.rowList.get(rowIdx);
+      List<Object> row = table.getRow(rowIdx);
       int i = 0;
-      for (int colIdx = 0; colIdx < row.size(); colIdx++) {
-        //System.out.println("Adding ext.getString(" + rowIdx + ", " + colIdx+ ") = " + ext.getString(row, colIdx));
-
+      for (Object val : row) {
         // Unfortunately Vector.Builder does not have an add(Object) method so we need to downcast
         Vector.Builder<?> builder = builders.get(i++);
-        Object value = row.get(colIdx);
-        if (value == null) {
+        if (val == null) {
           builder.addNA();
         } else if (builder instanceof IntArrayVector.Builder) {
-          ((IntArrayVector.Builder)builder).add(asInteger(value));
+          ((IntArrayVector.Builder) builder).add(asInteger(val));
         } else if (builder instanceof LogicalArrayVector.Builder) {
-          ((LogicalArrayVector.Builder)builder).add(asBoolean(value));
+          ((LogicalArrayVector.Builder) builder).add(asBoolean(val));
         } else if (builder instanceof DoubleArrayVector.Builder) {
-          ((DoubleArrayVector.Builder)builder).add(asDouble(value));
+          ((DoubleArrayVector.Builder) builder).add(asDouble(val));
         } else if (builder instanceof StringVector.Builder) {
-          ((StringVector.Builder)builder).add(asString(value));
+          ((StringVector.Builder) builder).add(asString(val));
         } else if (builder instanceof RawVector.Builder) {
-          ((RawVector.Builder)builder).add(asByte(value));
+          ((RawVector.Builder) builder).add(asByte(val));
         } else {
           throw new DataTransformationRuntimeException(RDataTransformer.class + ".toDataFrame(): Unknown Builder type: " + builder.getClass());
         }
       }
     }
-    ListVector columnVector = columnInfo(table.headerList);
+    ListVector columnVector = columnInfo(table.getHeaderList());
     /* call build() on each column and add them as named cols to df */
     ListVector.NamedBuilder dfBuilder = new ListVector.NamedBuilder();
     for (int i = 0; i < columnVector.length(); i++) {
@@ -202,11 +202,11 @@ public class RDataTransformer {
   }
 
   private static List<Vector.Builder<?>> builders(Table table) {
-    int numColNums = table.columnTypes.size();
-    int numRows = table.getRowList().size();
+    int numColNums = table.getColumnTypes().size();
+    int numRows = table.getRowSize();
     List<Vector.Builder<?>> builderList = new ArrayList<>(numColNums);
     for (int i = 0; i < numColNums; i++) {
-      DataType dataType = table.columnTypes.get(i);
+      DataType dataType = table.getColumnType(i);
       builderList.add(dataType.getVectorType().newBuilderWithInitialCapacity(numRows));
     }
     return builderList;

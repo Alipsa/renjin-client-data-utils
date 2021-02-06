@@ -69,7 +69,9 @@ See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/D
 # Version history
 
 ### 1.3-SNAPSHOT
-- add column convenience methods (getColumnForName, getColumnIndex, getColumn)
+- add Table column convenience methods (getColumnForName, getColumnIndex, getColumn)
+- Make Table data immutable, this allows for some performance optimizations and makes usage much clearer 
+  (Table to process data from Renjin, RDataTransformer to handle mutable data to and from Renjin)
 
 ### 1.2
 - Add docs

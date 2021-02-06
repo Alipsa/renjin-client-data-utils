@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static se.alipsa.renjin.client.datautils.RDataTransformer.*;
@@ -20,12 +21,16 @@ import static se.alipsa.renjin.client.datautils.RDataTransformer.*;
  * Data frames in R are "column based" (variable based) which is very convenient for analysis but Java is
  * Object / Observation based so a Table which essentially is just a List of rows (observations), makes is much easier
  * to work with the data in Java.
+ * Once the Table it created, the data is immutable.
  */
 public class Table {
 
-  List<String> headerList = new ArrayList<>();
-  List<List<Object>> rowList = new ArrayList<>();
-  List<DataType> columnTypes = new ArrayList<>();
+  private List<String> headerList;
+  private List<List<Object>> rowList;
+  private List<DataType> columnTypes;
+
+  // derived from rowlist, calculated on first use and cached (this is why rowList is immutable)
+  private List<List<Object>> columnList = null;
 
   public Table() {
     // Empty
@@ -66,21 +71,23 @@ public class Table {
   }
 
   public Table(ListVector df, boolean contentAsStrings) {
-    headerList = toHeaderList(df);
-    columnTypes = toTypeList(df, contentAsStrings);
-    rowList = toRowlist(df, contentAsStrings);
+    headerList = Collections.unmodifiableList(toHeaderList(df));
+    columnTypes = Collections.unmodifiableList(toTypeList(df, contentAsStrings));
+    rowList = Collections.unmodifiableList(toRowlist(df, contentAsStrings));
   }
 
   @SafeVarargs
-  public Table(List<String> columnList, List<List<Object>> rowList, List<DataType>... dataTypesOpt) {
-    headerList = columnList;
-    this.rowList = rowList;
+  public Table(List<String> headerList, List<List<Object>> rowList, List<DataType>... dataTypesOpt) {
+    setHeaderList(headerList);
+    setRowList(rowList);
     if (dataTypesOpt.length > 0) {
-      columnTypes = dataTypesOpt[0];
+      setColumnTypes(dataTypesOpt[0]);
     } else {
-      for(int i = 0; i < columnList.size(); i++) {
-        columnTypes.add(null);
+      List<DataType> columns = new ArrayList<>();
+      for(int i = 0; i < headerList.size(); i++) {
+        columns.add(null);
       }
+      setColumnTypes(columns);
     }
   }
 
@@ -91,16 +98,21 @@ public class Table {
     } else { // No other types supported in Renjin at the moment
       dataType = DataType.DOUBLE;
     }
+    List<DataType> columns = new ArrayList<>();
     for (int i = 0; i < mat.getNumCols(); i++) {
-      columnTypes.add(dataType);
+      columns.add(dataType);
     }
+    setColumnTypes(columns);
 
+    List<String> headers = new ArrayList<>();
     for (int i = 0; i < mat.getNumCols(); i++) {
       String colName = mat.getColName(i) == null ? i + "" : mat.getColName(i);
-      headerList.add(colName);
+      headers.add(colName);
     }
+    setHeaderList(headers);
 
     List<Object> row;
+    List<List<Object>> rows = new ArrayList<>();
     for (int i = 0; i < mat.getNumRows(); i++) {
       row = new ArrayList<>();
       for (int j = 0; j < mat.getNumCols(); j++) {
@@ -110,17 +122,17 @@ public class Table {
           row.add(mat.getElementAsDouble(i, j));
         }
       }
-      rowList.add(row);
+      rows.add(row);
     }
+    setRowList(rows);
   }
 
   public Table(Vector vec) {
-    headerList.add(vec.getTypeName()); // TODO: should be name of the list, not the type name
-    columnTypes.add(DataType.forVectorType(vec.getVectorType()));
+    setHeaderList(Collections.singletonList(vec.getTypeName())); // TODO: should be name of the list, not the type name
+    setColumnTypes(Collections.singletonList(DataType.forVectorType(vec.getVectorType())));
     List<Vector> values = new ArrayList<>();
     values.add(vec);
-
-    rowList = transpose(values);
+    setRowList(transpose(values));
   }
 
   public Table(ResultSet rs) throws SQLException {
@@ -128,17 +140,24 @@ public class Table {
 
     int ncols = rsmd.getColumnCount();
 
+    List<String> headers = new ArrayList<>();
+    List<DataType> types = new ArrayList<>();
     for (int i = 1; i <= ncols; i++) {
-      headerList.add(rsmd.getColumnName(i));
-      columnTypes.add(DataType.forSqlType(rsmd.getColumnType(i)));
+      headers.add(rsmd.getColumnName(i));
+      types.add(DataType.forSqlType(rsmd.getColumnType(i)));
     }
+    setHeaderList(headers);
+    setColumnTypes(types);
+
+    List<List<Object>> rows = new ArrayList<>();
     while (rs.next()) {
       List<Object> row = new ArrayList<>();
       for (int i = 1; i <= ncols; i++) {
         row.add(rs.getObject(i));
       }
-      rowList.add(row);
+      rows.add(row);
     }
+    setRowList(rows);
   }
 
   public Table asTransposed() {
@@ -146,16 +165,19 @@ public class Table {
   }
 
   public List<List<Object>> getColumnList() {
-    List<List<Object>> columnList = new ArrayList<>();
-    for (List<Object> row : rowList) {
-      if (columnList.size() == 0) {
-        for (int i = 0; i < row.size(); i++) {
-          columnList.add(new ArrayList<>());
+    if (columnList == null) {
+      List<List<Object>> columns = new ArrayList<>();
+      for (List<Object> row : rowList) {
+        if (columns.size() == 0) {
+          for (int i = 0; i < row.size(); i++) {
+            columns.add(new ArrayList<>());
+          }
+        }
+        for (int j = 0; j < row.size(); j++) {
+          columns.get(j).add(row.get(j));
         }
       }
-      for (int j = 0; j < row.size(); j++) {
-        columnList.get(j).add(row.get(j));
-      }
+      columnList = Collections.unmodifiableList(columns);
     }
     return columnList;
   }
@@ -178,6 +200,18 @@ public class Table {
 
   public List<Object> getRow(int index) {
     return rowList.get(index);
+  }
+
+  private void setHeaderList(List<String> headers) {
+    headerList = Collections.unmodifiableList(headers);
+  }
+
+  private void setRowList(List<List<Object>> rows) {
+    rowList = Collections.unmodifiableList(rows);
+  }
+
+  private void setColumnTypes(List<DataType> dataTypes) {
+    columnTypes = Collections.unmodifiableList(dataTypes);
   }
 
   /**
@@ -344,5 +378,9 @@ public class Table {
   @Override
   public String toString() {
     return "Table with " + getHeaderSize() + " columns and " + getRowSize() + " rows";
+  }
+
+  public DataType getColumnType(int i) {
+    return columnTypes.get(i);
   }
 }
