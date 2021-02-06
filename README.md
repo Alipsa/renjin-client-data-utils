@@ -14,7 +14,8 @@ To use it add the following dependency to your pom.xml:
 The Table class makes it easy to interact with R data.frame and matrix data.
 Data frames in R are "column based" (variable based) which is very convenient for analysis but Java is
 Object / Observation based, so a Table which essentially is just a List of rows (observations), makes is much easier
-to work with the data in Java.
+to work with the data in Java. The data in a Table is immutable once created. If you need mutable data,
+consider using RDataTRansformer instead (see below).
 
 ### Example:
 
@@ -62,7 +63,7 @@ See [TableTest](src/test/java/test/alipsa/renjin/client/datautils/TableTest.java
 
 This is a utility class that transforms various R data types into Java.
 In many ways it is similar to the Table class but allows for more atomic operations
-useful when you only want the result in a particular way once.
+useful when you only want the result in a particular way once, or you need mutable data.
 
 See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/DataTransformationTest.java) for examples.
 
