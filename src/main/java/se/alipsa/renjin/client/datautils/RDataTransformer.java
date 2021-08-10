@@ -1,7 +1,7 @@
 package se.alipsa.renjin.client.datautils;
 
 import org.renjin.primitives.Types;
-import org.renjin.primitives.vector.RowNamesVector;
+import org.renjin.primitives.sequence.IntSequence;
 import org.renjin.sexp.*;
 
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public class RDataTransformer {
   public static List<DataType> toTypeList(ListVector df, boolean... stringsOnlyOpt) {
     List<DataType> typeList = new ArrayList<>(df.length());
     if (stringsOnlyOpt.length > 0 && stringsOnlyOpt[0]) {
-      for ( int i = 0; i < df.length(); i++) {
+      for (int i = 0; i < df.length(); i++) {
         typeList.add(DataType.STRING);
       }
     } else {
@@ -84,10 +84,16 @@ public class RDataTransformer {
       Map<Symbol, SEXP> attrMap = attributes.toMap();
       Symbol s = attrMap.keySet().stream().filter(p -> "levels".equals(p.getPrintName())).findAny().orElse(null);
       Vector vec = (Vector) attrMap.get(s);
-      if (contentAsStrings) {
-        column.add(vec.getElementAsString(col.getElementAsInt(i) - 1));
+      int factorIndex = col.getElementAsInt(i) - 1;
+      if (Integer.MAX_VALUE == factorIndex) {
+        //Element is NA, setting value to StringArrayVector.NA (it's a factor, so we know the type is character)
+        column.add(StringArrayVector.NA);
       } else {
-        column.add(vec.getElementAsObject(col.getElementAsInt(i) - 1));
+        if (contentAsStrings) {
+          column.add(vec.getElementAsString(factorIndex));
+        } else {
+          column.add(vec.getElementAsObject(factorIndex));
+        }
       }
     } else {
       if (contentAsStrings) {
@@ -99,7 +105,6 @@ public class RDataTransformer {
   }
 
   /**
-   *
    * @param table the Table to convert
    * @return a ListVector (data.frame) corresponding to the Table
    */
@@ -108,8 +113,7 @@ public class RDataTransformer {
   }
 
   /**
-   *
-   * @param table the Table to convert
+   * @param table       the Table to convert
    * @param stringsOnly if true, the resulting ListVector (data.frame) will consist of Strings (characters)
    * @return a ListVector (data.frame) corresponding to the Table
    */
@@ -153,14 +157,17 @@ public class RDataTransformer {
       ListVector ci = (ListVector) columnVector.get(i);
       dfBuilder.add(ci.get("name").asString(), builders.get(i).build());
     }
-    dfBuilder.setAttribute("row.names", new RowNamesVector(numRows));
+    // used to be able to do
+    //dfBuilder.setAttribute("row.names", new org.renjin.primitives.vector.RowNamesVector(numRows));
+    // Try it with an IntSequence for now...
+    dfBuilder.setAttribute("row.names", new IntSequence(1, 1, numRows));
     dfBuilder.setAttribute("class", StringVector.valueOf("data.frame"));
     return dfBuilder.build();
   }
 
   private static byte asByte(@Nonnull Object value) {
     if (value instanceof Byte) {
-      return (Byte)value;
+      return (Byte) value;
     }
     return Byte.parseByte(String.valueOf(value));
   }
@@ -171,14 +178,14 @@ public class RDataTransformer {
 
   private static double asDouble(@Nonnull Object value) {
     if (value instanceof Double) {
-      return (Double)value;
+      return (Double) value;
     }
     return Double.parseDouble(String.valueOf(value));
   }
 
   private static boolean asBoolean(@Nonnull Object value) {
     if (value instanceof Boolean) {
-      return (Boolean)value;
+      return (Boolean) value;
     }
     String stringValue = String.valueOf(value);
     return "true".equalsIgnoreCase(stringValue) || "1".equalsIgnoreCase(stringValue);
@@ -186,7 +193,7 @@ public class RDataTransformer {
 
   private static int asInteger(@Nonnull Object value) {
     if (value instanceof Integer) {
-      return (Integer)value;
+      return (Integer) value;
     }
     return Integer.parseInt(String.valueOf(value));
   }

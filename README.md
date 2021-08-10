@@ -74,6 +74,16 @@ See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/D
 - Make Table data immutable, this allows for some performance optimizations and makes usage much clearer 
   (Table to process data from Renjin, RDataTransformer to handle mutable data to and from Renjin)
 
+### 1.4
+Fix handling of factorized columns with NA values
+Change Row naming to use an IntSequence instead of the no longer existing RowNamesVector(numberOfRows)
+Bump dependency versions
+
+### 1.3
+add Table column convenience methods (getColumnForName, getColumnIndex, getColumn)
+Make Table data immutable, this allows for some performance optimizations and makes usage much clearer
+(Table to process data from Renjin, RDataTransformer to handle mutable data to and from Renjin)
+
 ### 1.2
 - Add docs
 - cleanup and expand tests
