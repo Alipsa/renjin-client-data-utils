@@ -284,4 +284,5 @@ public class TableTest {
     assertEquals("FALSE", table.getValue(4,6), "row 5 col 7");
     assertEquals(false, table.getValueAsBoolean(4,6), "row 5 col 7");
   }
+
 }

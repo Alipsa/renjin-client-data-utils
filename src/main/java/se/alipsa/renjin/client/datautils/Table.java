@@ -164,6 +164,7 @@ public class Table {
     return new Table(headerList, getColumnList(), columnTypes);
   }
 
+  @SuppressFBWarnings("EI_EXPOSE_REP")
   public List<List<Object>> getColumnList() {
     if (columnList == null) {
       List<List<Object>> columns = new ArrayList<>();
@@ -182,6 +183,7 @@ public class Table {
     return columnList;
   }
 
+  @SuppressFBWarnings("EI_EXPOSE_REP")
   public List<String> getHeaderList() {
     return headerList;
   }
@@ -190,6 +192,7 @@ public class Table {
     return headerList.size();
   }
 
+  @SuppressFBWarnings("EI_EXPOSE_REP")
   public List<List<Object>> getRowList() {
     return rowList;
   }
@@ -231,6 +234,7 @@ public class Table {
     return null;
   }
 
+  @SuppressFBWarnings("EI_EXPOSE_REP")
   public List<DataType> getColumnTypes() {
     return columnTypes;
   }
