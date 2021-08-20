@@ -67,6 +67,9 @@ public class RDataTransformer {
 
   public static List<List<Object>> transpose(List<Vector> table, boolean contentAsStrings) {
     List<List<Object>> ret = new ArrayList<>();
+    if (table.size() == 0) {
+      return ret;
+    }
     final int N = table.get(0).length();
     for (int i = 0; i < N; i++) {
       List<Object> row = new ArrayList<>();

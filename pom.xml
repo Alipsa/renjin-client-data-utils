@@ -7,7 +7,7 @@
 
     <groupId>se.alipsa</groupId>
     <artifactId>renjin-client-data-utils</artifactId>
-    <version>1.4</version>
+    <version>1.4.1</version>
     <packaging>jar</packaging>
 
     <name>Renjin client data utilities</name>

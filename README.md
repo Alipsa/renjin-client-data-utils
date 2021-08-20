@@ -6,7 +6,7 @@ To use it add the following dependency to your pom.xml:
 <dependency>
     <groupId>se.alipsa</groupId>
     <artifactId>renjin-client-data-utils</artifactId>
-    <version>1.3</version>
+    <version>1.4.1</version>
 </dependency>
 ```
 
@@ -69,10 +69,8 @@ See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/D
 
 # Version history
 
-### 1.3
-- add Table column convenience methods (getColumnForName, getColumnIndex, getColumn)
-- Make Table data immutable, this allows for some performance optimizations and makes usage much clearer 
-  (Table to process data from Renjin, RDataTransformer to handle mutable data to and from Renjin)
+### 1.4.1
+Handle transformations of empty tables (used to get an ArrayIndexOutOfBoundsException) - now returning empty List instead
 
 ### 1.4
 Fix handling of factorized columns with NA values
