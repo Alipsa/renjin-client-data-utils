@@ -14,7 +14,8 @@ public enum DataType {
   BOOLEAN("logical", LogicalVector.VECTOR_TYPE),
   DOUBLE("double", DoubleVector.VECTOR_TYPE),
   STRING("character", StringVector.VECTOR_TYPE),
-  BYTE("raw", RawVector.VECTOR_TYPE);
+  BYTE("raw", RawVector.VECTOR_TYPE),
+  UNKNOWN("character", StringVector.VECTOR_TYPE);
 
   private final String rtypeName;
   private final Vector.Type vectorType;
@@ -64,7 +65,7 @@ public enum DataType {
       //case Types.VARBINARY:
       //  return DataType.BYTE_ARRAY;
       default:
-        return null;
+        return UNKNOWN;
     }
   }
 

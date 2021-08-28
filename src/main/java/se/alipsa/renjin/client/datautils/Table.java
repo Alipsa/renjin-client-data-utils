@@ -85,7 +85,7 @@ public class Table {
     } else {
       List<DataType> columns = new ArrayList<>();
       for(int i = 0; i < headerList.size(); i++) {
-        columns.add(null);
+        columns.add(DataType.UNKNOWN);
       }
       setColumnTypes(columns);
     }

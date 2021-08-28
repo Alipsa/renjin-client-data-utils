@@ -69,6 +69,9 @@ See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/D
 
 # Version history
 
+### 1.4.2
+- If no info on column types are given when creating a table then treat them as Strings
+
 ### 1.4.1
 Handle transformations of empty tables (used to get an ArrayIndexOutOfBoundsException) - now returning empty List instead
 
