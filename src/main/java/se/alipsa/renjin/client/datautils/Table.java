@@ -7,6 +7,8 @@ import org.renjin.sexp.*;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -19,11 +21,16 @@ import static se.alipsa.renjin.client.datautils.RDataTransformer.*;
 
 /**
  * Data frames in R are "column based" (variable based) which is very convenient for analysis but Java is
- * Object / Observation based so a Table which essentially is just a List of rows (observations), makes is much easier
+ * Object / Observation based so a Table which essentially is just a List of rows (observations), makes it much easier
  * to work with the data in Java.
  * Once the Table it created, the data is immutable.
+ * You can, however, set the decimal formatter which determines how conversion to decimal data (double and floats) are
+ * performed when you retrieve the data though the convenience methods getValueAsDouble() and getValueAsFloat()
+ * (The default DecimalFormatter is using the default (current) Locale of the jvm).
  */
 public class Table {
+
+  private DecimalFormat decimalFormat = new DecimalFormat();
 
   private List<String> headerList;
   private List<List<Object>> rowList;
@@ -290,7 +297,13 @@ public class Table {
     if (val instanceof Double) {
       return (Double)val;
     }
-    return Double.parseDouble(String.valueOf(val));
+
+    try {
+      return decimalFormat.parse(String.valueOf(val)).doubleValue();
+    } catch (ParseException e) {
+      // if we could not parse it, this will also likely fail
+      return Double.parseDouble(String.valueOf(val));
+    }
   }
 
   @SuppressFBWarnings("NP_BOOLEAN_RETURN_NULL")
@@ -386,5 +399,14 @@ public class Table {
 
   public DataType getColumnType(int i) {
     return columnTypes.get(i);
+  }
+
+  /**
+   * Set the decimal formatter to use in convenience methods getting data as double or float.
+   * Once set, the decimal formatter is no longer mutable i.e. a change to the decimal formatter
+   * after it has been set in the table does not affect the decimal formatter in the table.
+   */
+  public void setDecimalFormat(DecimalFormat decimalFormat) {
+    this.decimalFormat = (DecimalFormat)decimalFormat.clone();
   }
 }

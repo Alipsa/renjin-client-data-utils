@@ -13,12 +13,14 @@ import se.alipsa.renjin.client.datautils.Table;
 
 import javax.script.ScriptException;
 
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,6 +32,8 @@ public class TableTest {
 
   private static RenjinScriptEngine engine;
   private final Map<String,Object> cache = new HashMap<>();
+
+  private DecimalFormat df = new DecimalFormat();
 
   @BeforeAll
   public static void init() {
@@ -276,7 +280,7 @@ public class TableTest {
     assertNull(table.getValueAsString(2, 1), "row 3 col 2");
     assertNull(table.getValue(2, 1), "row 3 col 2");
 
-    assertEquals("0.01", table.getValue(3,5), "row 4 col 6");
+    assertEquals(df.format(0.01), table.getValue(3,5), "row 4 col 6");
     assertEquals(0.01, table.getValueAsDouble(3,5), "row 4 col 6");
 
     assertEquals("Sales", table.getValueAsString(4,0), "row 5 col 1");
