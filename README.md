@@ -1,5 +1,8 @@
 # renjin-client-data-utils
-Utilities to facilitate working with R data from Renjin in Java
+Utilities to facilitate working with R data from Renjin in Java. In R, there are various basic 
+data structures such as matrix and data.frame (the java type is ListVector in Renjin R) that are very easy to 
+work with in R but can be a bit cumbersome in Java. This library aims to simplify working in Java with data derived from 
+Renjin R. 
 
 To use it add the following dependency to your pom.xml:
 ```xml
