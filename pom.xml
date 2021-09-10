@@ -7,7 +7,7 @@
 
     <groupId>se.alipsa</groupId>
     <artifactId>renjin-client-data-utils</artifactId>
-    <version>1.4.2-SNAPSHOT</version>
+    <version>1.4.2</version>
     <packaging>jar</packaging>
 
     <name>Renjin client data utilities</name>
@@ -64,7 +64,7 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.3.0</version>
+            <version>4.4.1</version>
             <scope>provided</scope>
         </dependency>
 
@@ -135,9 +135,9 @@
                         <configuration>
                             <rules>
                                 <requireMavenVersion>
-                                    <version>[3.5.2,)</version>
+                                    <version>[3.6.3,)</version>
                                     <level>ERROR</level>
-                                    <message>Please use maven version 3.5.2 or higher</message>
+                                    <message>Please use maven version 3.6.3 or higher</message>
                                 </requireMavenVersion>
                                 <requireJavaVersion>
                                     <version>1.8.0</version>

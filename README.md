@@ -6,7 +6,7 @@ To use it add the following dependency to your pom.xml:
 <dependency>
     <groupId>se.alipsa</groupId>
     <artifactId>renjin-client-data-utils</artifactId>
-    <version>1.4.1</version>
+    <version>1.4.2</version>
 </dependency>
 ```
 
@@ -71,6 +71,7 @@ See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/D
 
 ### 1.4.2
 - If no info on column types are given when creating a table then treat them as Strings
+- Bump dependency versions for spotbugs and require maven 3.6.3 or higher for cleaner output 
 
 ### 1.4.1
 Handle transformations of empty tables (used to get an ArrayIndexOutOfBoundsException) - now returning empty List instead
