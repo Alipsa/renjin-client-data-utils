@@ -1,8 +1,8 @@
 # renjin-client-data-utils
 Utilities to facilitate working with R data from Renjin in Java. In R, there are various basic 
-data structures such as matrix and data.frame (the java type is ListVector in Renjin R) that are very easy to 
-work with in R but can be a bit cumbersome in Java. This library aims to simplify working in Java with data derived from 
-Renjin R. 
+data structures such as matrix and data.frame and are faithfully backed by Java classes such as 
+ListVector for data.frame that while very easy to work with in R, can be a bit cumbersome to work with
+directly in Java. This library aims to simplify working with data derived from Renjin R from Java code. 
 
 To use it add the following dependency to your pom.xml:
 ```xml
@@ -30,7 +30,16 @@ startdate <- as.Date(c('2013-11-1','2018-3-25','2017-3-14'))
 endDate <- as.POSIXct(c('2020-01-10 00:00:00', '2020-04-12 12:10:13', '2020-10-06 10:00:05'), tz='UTC' ) 
 data.frame(employee, salary, startdate, endDate)
 ```
-... you run it in the RenjinScriptEngine like this:
+
+I.e a two dimensional table looking like this:
+
+| employee    | salary | startdate | enddate             |
+| --------    | -----: | --------- | -------             |
+| John Doe    |  21000 | 2013-11-1 | 2020-01-10 00:00:00 |
+| Peter Smith |  23400 | 2018-3-25 | 2020-04-12 12:10:13 |
+| Jane Doe    |  26800 | 2017-3-14 | 2020-10-06 10:00:05 |
+
+... you create it in the RenjinScriptEngine like this:
 
 ```java
 import org.renjin.script.RenjinScriptEngine;
