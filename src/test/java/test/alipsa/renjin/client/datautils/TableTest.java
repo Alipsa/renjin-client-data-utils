@@ -14,6 +14,8 @@ import se.alipsa.renjin.client.datautils.Table;
 import javax.script.ScriptException;
 
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -70,7 +72,7 @@ public class TableTest {
     Table table = Table.createTable(sexp);
     table.getColumnTypes().forEach(type -> assertThat(type, equalTo(DataType.BOOLEAN)));
     assertThat(table.getValueAsBoolean(0, 0), equalTo(true));
-    assertThat(table.getValue(1, 0), equalTo(false));
+    assertThat(table.getValue(1, 0), equalTo(Boolean.FALSE));
     assertThat(table.getValueAsBoolean(3, 0), is(nullValue()));
   }
 
@@ -287,6 +289,38 @@ public class TableTest {
     assertEquals("22000", table.getValue(4,2), "row 5 col 3");
     assertEquals("FALSE", table.getValue(4,6), "row 5 col 7");
     assertEquals(false, table.getValueAsBoolean(4,6), "row 5 col 7");
+  }
+
+  @Test
+  public void testDecimalFormatting() {
+
+    List<List<Object>> rows = new ArrayList<>();
+    rows.add(new ArrayList<Object>() {{
+      add("1,5");
+      add(1.0);
+    }});
+
+    rows.add(new ArrayList<Object>() {{
+      add("1.500,98");
+      add(0.99999999);
+    }});
+
+    Table table = new Table(
+        new ArrayList<String>() {{
+          add("numberVal");
+          add("boolVal");
+        }},
+        rows
+    );
+
+    NumberFormat format = DecimalFormat.getNumberInstance(Locale.GERMANY);
+    table.setNumberFormat(format);
+
+    assertEquals(1.5, table.getValueAsDouble(0,0), 0.000000001);
+    assertEquals(1500.98, table.getValueAsDouble(1,0), 0.000000001);
+
+    assertEquals(true, table.getValueAsBoolean(0, 1));
+    assertEquals(false, table.getValueAsBoolean(1, 1));
   }
 
 }

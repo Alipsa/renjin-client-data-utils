@@ -69,6 +69,9 @@ assertThat(table.getValue(1, 1), equalTo(23400.0));
 assertThat(table.getValueAsLocalDate(2, 2), equalTo(LocalDate.of(2017, 3, 14)));
 assertThat(table.getValueAsLocalDateTime(2, 3), equalTo(LocalDateTime.of(2020, 10, 6, 10, 0, 5)));
 ```
+As you see from the above we access the Table data in a row, column way which makes it easy to 
+display the data in Swing or JavaFx.
+
 See [TableTest](src/test/java/test/alipsa/renjin/client/datautils/TableTest.java) for more examples. 
 
 ## se.alipsa.renjin.client.datautils.RDataTransformer
@@ -80,6 +83,11 @@ useful when you only want the result in a particular way once, or you need mutab
 See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/DataTransformationTest.java) for examples.
 
 # Version history
+
+### 1.4.3
+- make the convenience methods more robust and performing a conversion (if possible) into 
+  the type requested
+- Add more Javadocs
 
 ### 1.4.2
 - If no info on column types are given when creating a table then treat them as Strings

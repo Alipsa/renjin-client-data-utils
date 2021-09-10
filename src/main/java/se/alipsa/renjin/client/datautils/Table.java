@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,16 +22,17 @@ import static se.alipsa.renjin.client.datautils.RDataTransformer.*;
 
 /**
  * Data frames in R are "column based" (variable based) which is very convenient for analysis but Java is
- * Object / Observation based so a Table which essentially is just a List of rows (observations), makes it much easier
+ * row / Observation based so a Table which essentially is just a List of rows (observations), makes it much easier
  * to work with the data in Java.
  * Once the Table it created, the data is immutable.
  * You can, however, set the decimal formatter which determines how conversion to decimal data (double and floats) are
- * performed when you retrieve the data though the convenience methods getValueAsDouble() and getValueAsFloat()
+ * performed when you retrieve the data though the convenience methods {@link #getValueAsDouble(int, int)}
+ * and {@link #getValueAsFloat(int, int)}
  * (The default DecimalFormatter is using the default (current) Locale of the jvm).
  */
 public class Table {
 
-  private DecimalFormat decimalFormat = new DecimalFormat();
+  private NumberFormat numberFormat = DecimalFormat.getInstance();
 
   private List<String> headerList;
   private List<List<Object>> rowList;
@@ -142,6 +144,13 @@ public class Table {
     setRowList(transpose(values));
   }
 
+  /**
+   * Constructor to create a Table from a live java.sql.ResultSet.
+   * The resultSet meta data is used to determine column types.
+   *
+   * @param rs the ResultSet to create the Table from
+   * @throws SQLException if a database issue occurs
+   */
   public Table(ResultSet rs) throws SQLException {
     ResultSetMetaData rsmd = rs.getMetaData();
 
@@ -167,6 +176,10 @@ public class Table {
     setRowList(rows);
   }
 
+  /**
+   * @return a transposed version of the Table i.e. the table is "tilted" 90 degrees so that each row becomes a column
+   * and each column becomes a row.
+   */
   public Table asTransposed() {
     return new Table(headerList, getColumnList(), columnTypes);
   }
@@ -208,6 +221,10 @@ public class Table {
     return rowList.size();
   }
 
+  /**
+   * @param index the row index (0 based) for which row to get
+   * @return a List of Objects where each object in the list is the cell data
+   */
   public List<Object> getRow(int index) {
     return rowList.get(index);
   }
@@ -257,6 +274,11 @@ public class Table {
     return getColumnList().get(index);
   }
 
+  /**
+   *
+   * @param colName the name of the column
+   * @return the index number matching the first occurrence of the column name or -1 if no match is found
+   */
   public int getColumnIndex(String colName) {
     for (int colIdx = 0; colIdx < headerList.size(); colIdx++) {
       if (headerList.get(colIdx).equals(colName)) return colIdx;
@@ -264,11 +286,22 @@ public class Table {
     return -1;
   }
 
+  /**
+   * Similar to getRowList this gives you all the values of a particular column
+   * @param index the index number of the column to get
+   * @return a List of Objects where each Object is the value
+   */
   public List<Object> getColumn(int index) {
     return getColumnList().get(index);
   }
 
   /**
+   * ListVector is the implementation of a data.frame in Renjin R. If you have data in Java that you want to
+   * work with in R you can convert the Table to a ListVector using this method and then insert it into the
+   * session using the put method on the RenjinScriptEngine e.g.
+   * <p>
+   * <code>engine.put("salaryData", myTable.asDataframe());</code>
+   * </p>
    * @param stringsOnlyOpt Optional param - if true, the resulting ListVector (data.frame) will consist of Strings (characters)
    * @return this table as a ListVector (data.frame) for easy handling in R
    */
@@ -276,11 +309,22 @@ public class Table {
     return toDataframe(this, stringsOnlyOpt.length > 0 && stringsOnlyOpt[0]);
   }
 
-
+  /**
+   *
+   * @param row the row index
+   * @param column the column index
+   * @return the value of the cell specified
+   */
   public Object getValue(int row, int column) {
     return rowList.get(row).get(column);
   }
 
+  /**
+   *
+   * @param row the row index
+   * @param column the column index
+   * @return the value of the cell specified converted to a String
+   */
   public String getValueAsString(int row, int column) {
     Object val = getValue(row, column);
     if (val == null) {
@@ -289,54 +333,38 @@ public class Table {
     return String.valueOf(val);
   }
 
+  /**
+   *
+   * @param row the row index
+   * @param column the column index
+   * @return the value of the cell specified converted to a Double. If the underlaying value is a String,
+   * the default DecimalFormatter for the JVM on the particular system it is running on is used to determine what
+   * the group and decimal separator characters are. This can be adjusted if needed by setting the DecimalFormatter
+   * using the {@link #setNumberFormat(NumberFormat)} method.
+   */
   public Double getValueAsDouble(int row, int column) {
-    Object val = getValue(row, column);
-    if (val == null) {
-      return null;
-    }
-    if (val instanceof Double) {
-      return (Double)val;
-    }
-
-    try {
-      return decimalFormat.parse(String.valueOf(val)).doubleValue();
-    } catch (ParseException e) {
-      // if we could not parse it, this will also likely fail
-      return Double.parseDouble(String.valueOf(val));
-    }
+    return ValueConverter.asDouble(getValue(row, column), numberFormat);
   }
 
+  /**
+   *
+   * @param row the row index
+   * @param column the column index
+   * @return the value of the cell specified converted to a Boolean. If the underlaying value is a String,
+   * Boolean.TRUE is returned if the string contains "true", "sant", "1", "on", "yes", "ja", or "真" (case insensitive).
+   * If the underlying value is a Double and a NaN then null is returned
+   */
   @SuppressFBWarnings("NP_BOOLEAN_RETURN_NULL")
   public Boolean getValueAsBoolean(int row, int column) {
-    Object val = getValue(row, column);
-    if (val == null || val instanceof Double && Double.isNaN((Double)val)) {
-      return null;
-    }
-    if (val instanceof Boolean) {
-      return (Boolean) val;
-    }
-    switch (String.valueOf(val).toLowerCase()) {
-      case "true":
-      case "1":
-      case "on":
-      case "yes":
-        return Boolean.TRUE;
-      default:
-        return Boolean.FALSE;
-    }
+    return ValueConverter.asBoolean(getValue(row, column));
   }
 
   public Integer getValueAsInteger(int row, int column) {
-    Double val = getValueAsDouble(row, column);
-    if (val == null || Double.isNaN(val)) {
-      return null;
-    }
-    return val.intValue();
+    return ValueConverter.asInteger(getValue(row, column), numberFormat);
   }
 
   public Long getValueAsLong(int row, int column) {
-    Double val = getValueAsDouble(row, column);
-    return val == null ? null : val.longValue();
+    return ValueConverter.asLong(getValue(row, column), numberFormat);
   }
 
   public Float getValueAsFloat(int row, int column) {
@@ -405,8 +433,10 @@ public class Table {
    * Set the decimal formatter to use in convenience methods getting data as double or float.
    * Once set, the decimal formatter is no longer mutable i.e. a change to the decimal formatter
    * after it has been set in the table does not affect the decimal formatter in the table.
+   *
+   * @param numberFormat the {@link java.text.NumberFormat} to use when converting Strings to Float and Double
    */
-  public void setDecimalFormat(DecimalFormat decimalFormat) {
-    this.decimalFormat = (DecimalFormat)decimalFormat.clone();
+  public void setNumberFormat(NumberFormat numberFormat) {
+    this.numberFormat = (NumberFormat)numberFormat.clone();
   }
 }

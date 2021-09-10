@@ -4,6 +4,7 @@ import org.renjin.primitives.Types;
 import org.renjin.primitives.sequence.IntSequence;
 import org.renjin.sexp.*;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -120,7 +121,7 @@ public class RDataTransformer {
    * @param stringsOnly if true, the resulting ListVector (data.frame) will consist of Strings (characters)
    * @return a ListVector (data.frame) corresponding to the Table
    */
-  public static ListVector toDataframe(Table table, boolean stringsOnly) {
+  public static ListVector toDataframe(Table table, boolean stringsOnly, NumberFormat... numberFormat) {
     List<Vector.Builder<?>> builders;
     if (stringsOnly) {
       builders = stringBuilders(table.getHeaderSize());
@@ -139,17 +140,18 @@ public class RDataTransformer {
         if (val == null) {
           builder.addNA();
         } else if (builder instanceof IntArrayVector.Builder) {
-          ((IntArrayVector.Builder) builder).add(asInteger(val));
+          ((IntArrayVector.Builder) builder).add(asInt(val));
         } else if (builder instanceof LogicalArrayVector.Builder) {
-          ((LogicalArrayVector.Builder) builder).add(asBoolean(val));
+          ((LogicalArrayVector.Builder) builder).add(ValueConverter.asBoolean(val));
         } else if (builder instanceof DoubleArrayVector.Builder) {
-          ((DoubleArrayVector.Builder) builder).add(asDouble(val));
+          ((DoubleArrayVector.Builder) builder).add(asDouble(val, numberFormat));
         } else if (builder instanceof StringVector.Builder) {
           ((StringVector.Builder) builder).add(asString(val));
         } else if (builder instanceof RawVector.Builder) {
           ((RawVector.Builder) builder).add(asByte(val));
         } else {
-          throw new DataTransformationRuntimeException(RDataTransformer.class + ".toDataFrame(): Unknown Builder type: " + builder.getClass());
+          throw new DataTransformationRuntimeException(RDataTransformer.class + ".toDataFrame(): Unknown Builder type: "
+              + builder.getClass());
         }
       }
     }
@@ -179,24 +181,14 @@ public class RDataTransformer {
     return String.valueOf(value);
   }
 
-  private static double asDouble(@Nonnull Object value) {
-    if (value instanceof Double) {
-      return (Double) value;
-    }
-    return Double.parseDouble(String.valueOf(value));
+  private static double asDouble(@Nonnull Object value, NumberFormat... numberFormatOpt) {
+    NumberFormat numberFormat = numberFormatOpt.length > 0 ? numberFormatOpt[0] : NumberFormat.getNumberInstance();
+    return ValueConverter.asDouble(value, numberFormat);
   }
 
-  private static boolean asBoolean(@Nonnull Object value) {
-    if (value instanceof Boolean) {
-      return (Boolean) value;
-    }
-    String stringValue = String.valueOf(value);
-    return "true".equalsIgnoreCase(stringValue) || "1".equalsIgnoreCase(stringValue);
-  }
-
-  private static int asInteger(@Nonnull Object value) {
+  private static int asInt(@Nonnull Object value, NumberFormat... numberFormatOpt) {
     if (value instanceof Integer) {
-      return (Integer) value;
+      return (int) value;
     }
     return Integer.parseInt(String.valueOf(value));
   }
