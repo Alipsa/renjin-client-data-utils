@@ -71,6 +71,7 @@ See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/D
 
 ### 1.4.2
 - If no info on column types are given when creating a table then treat them as Strings
+- Add customizable decimal format awareness for getAsFloat and getAsDouble convenience methods.
 - Bump dependency versions for spotbugs and require maven 3.6.3 or higher for cleaner output 
 
 ### 1.4.1
