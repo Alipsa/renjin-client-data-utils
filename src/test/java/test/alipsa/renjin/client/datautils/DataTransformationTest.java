@@ -7,10 +7,13 @@ import org.renjin.eval.SessionBuilder;
 import org.renjin.script.RenjinScriptEngine;
 import org.renjin.script.RenjinScriptEngineFactory;
 import org.renjin.sexp.ListVector;
+import org.renjin.sexp.Vector;
 import se.alipsa.renjin.client.datautils.RDataTransformer;
 import se.alipsa.renjin.client.datautils.Table;
 
 import javax.script.ScriptException;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static se.alipsa.renjin.client.datautils.RDataTransformer.toHeaderList;
@@ -90,6 +93,30 @@ public class DataTransformationTest {
         + "}";
 
     engine.eval(compareScript);
+  }
+
+  @Test
+  public void testListConversions() throws ScriptException {
+    Vector vec = (Vector) engine.eval("c('a','b','c')");
+    List<String> list = RDataTransformer.vectorToList(vec, String.class);
+    assertEquals(3, list.size(), "Number of elements");
+    assertEquals("a", list.get(0), "First element");
+    assertEquals("b", list.get(1), "Second element");
+    assertEquals("c", list.get(2), "Last element");
+
+    vec = (Vector) engine.eval("c(1,2,3)");
+    List<Double> dl = RDataTransformer.vectorToList(vec, Double.class);
+    assertEquals(3, dl.size(), "Number of elements");
+    assertEquals(1, dl.get(0), "First element");
+    assertEquals(2, dl.get(1), "Second element");
+    assertEquals(3, dl.get(2), "Last element");
+
+    vec = (Vector) engine.eval("list(1,'foo',TRUE)");
+    List<Object> objects = RDataTransformer.vectorToList(vec);
+    assertEquals(3, objects.size(), "Number of elements");
+    assertEquals(1.0, objects.get(0), "First element");
+    assertEquals("foo", objects.get(1), "Second element");
+    assertEquals(true, objects.get(2), "Last element");
   }
 
 }

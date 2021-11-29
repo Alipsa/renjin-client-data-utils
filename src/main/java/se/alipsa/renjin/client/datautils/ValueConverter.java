@@ -1,5 +1,7 @@
 package se.alipsa.renjin.client.datautils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.text.NumberFormat;
 import java.text.ParseException;
 
@@ -9,6 +11,7 @@ public class ValueConverter {
     // Empty
   }
 
+  @SuppressFBWarnings("NP_BOOLEAN_RETURN_NULL")
   public static Boolean asBoolean(Object val) {
     if (val == null) {
       return null;
@@ -57,7 +60,7 @@ public class ValueConverter {
 
   public static Integer asInteger(Object value, NumberFormat numberFormat) {
     if (value instanceof Integer || value instanceof Short || value instanceof Byte) {
-      return (int) value;
+      return ((Number) value).intValue();
     }
     Double val = ValueConverter.asDouble(value, numberFormat);
     if (val == null || Double.isNaN(val)) {

@@ -9,7 +9,7 @@ To use it add the following dependency to your pom.xml:
 <dependency>
     <groupId>se.alipsa</groupId>
     <artifactId>renjin-client-data-utils</artifactId>
-    <version>1.4.2</version>
+    <version>1.4.3</version>
 </dependency>
 ```
 
@@ -88,6 +88,8 @@ See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/D
 - make the convenience methods more robust and performing a conversion (if possible) into 
   the type requested
 - Add more Javadocs
+- Add conversion from Vectors (c() and list() constructs in R) to java.util.List
+- Bump dependency versions for spotbugs and junit
 
 ### 1.4.2
 - If no info on column types are given when creating a table then treat them as Strings

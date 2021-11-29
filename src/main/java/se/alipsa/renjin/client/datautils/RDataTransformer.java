@@ -119,6 +119,7 @@ public class RDataTransformer {
   /**
    * @param table       the Table to convert
    * @param stringsOnly if true, the resulting ListVector (data.frame) will consist of Strings (characters)
+   * @param numberFormat (optional) the number format to use when handling decimals
    * @return a ListVector (data.frame) corresponding to the Table
    */
   public static ListVector toDataframe(Table table, boolean stringsOnly, NumberFormat... numberFormat) {
@@ -186,7 +187,7 @@ public class RDataTransformer {
     return ValueConverter.asDouble(value, numberFormat);
   }
 
-  private static int asInt(@Nonnull Object value, NumberFormat... numberFormatOpt) {
+  private static int asInt(@Nonnull Object value) {
     if (value instanceof Integer) {
       return (int) value;
     }
@@ -222,5 +223,22 @@ public class RDataTransformer {
     }
     //System.out.println("created " + builder.size() + " stringBuilders");
     return builder;
+  }
+
+  public static <T> List<T> vectorToList(Vector vector, Class<T> clazz) {
+    List<T> list = new ArrayList<>();
+    for (int i = 0; i <vector.length(); i++) {
+      Object obj = vector.getElementAsObject(i);
+      list.add(clazz.cast(obj));
+    }
+    return list;
+  }
+
+  public static List<Object> vectorToList(Vector vector) {
+    List<Object> list = new ArrayList<>();
+    for (int i = 0; i <vector.length(); i++) {
+      list.add(vector.getElementAsObject(i));
+    }
+    return list;
   }
 }
