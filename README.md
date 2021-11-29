@@ -84,6 +84,8 @@ See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/D
 
 # Version history
 
+### 1.4.4
+
 ### 1.4.3
 - make the convenience methods more robust and performing a conversion (if possible) into 
   the type requested
