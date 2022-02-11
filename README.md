@@ -85,6 +85,8 @@ See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/D
 # Version history
 
 ### 1.4.4
+- Add constructor for column wise constructing of a table
+- Add a DateArrayVector to handle column wise constructing of data types
 
 ### 1.4.3
 - make the convenience methods more robust and performing a conversion (if possible) into 

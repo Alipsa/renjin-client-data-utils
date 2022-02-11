@@ -6,24 +6,19 @@ import org.renjin.eval.Session;
 import org.renjin.eval.SessionBuilder;
 import org.renjin.script.RenjinScriptEngine;
 import org.renjin.script.RenjinScriptEngineFactory;
-import org.renjin.sexp.ListVector;
-import org.renjin.sexp.SEXP;
+import org.renjin.sexp.*;
 import se.alipsa.renjin.client.datautils.DataType;
+import se.alipsa.renjin.client.datautils.DateArrayVector;
 import se.alipsa.renjin.client.datautils.Table;
 
 import javax.script.ScriptException;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -93,6 +88,33 @@ public class TableTest {
     LocalDateTime expected = LocalDateTime.of(2020, 10, 6, 10, 0, 5);
     assertThat(table.getValueAsLocalDateTime(2, 3), equalTo(expected));
     assertThat(table.getValueAsLong(2, 3), equalTo(expected.toEpochSecond(ZoneOffset.UTC)));
+  }
+
+  @Test
+  public void testTableCreationFromColumnVectors() {
+    Table table = new Table(
+        Arrays.asList("id", "name", "workingFromHome", "nps", "date"),
+        new IntArrayVector(1,2,3,4),
+        new StringArrayVector("Adam", "Bertil", "Cesar", "David"),
+        new LogicalArrayVector(true, false, true, true),
+        new DoubleArrayVector(1.0, 6.13, 8.68, 8.82),
+        new DateArrayVector(LocalDate.now(), new Date(), new java.sql.Date(System.currentTimeMillis()), LocalDate.MAX)
+    );
+    assertEquals(1, table.getValueAsInteger(0,0));
+    assertEquals("Bertil", table.getValueAsString(1,1));
+    assertEquals(true, table.getValueAsBoolean(2,2));
+    assertEquals(8.82, table.getValueAsDouble(3,3));
+    assertEquals(LocalDate.now(), table.getValueAsLocalDate(0, 4));
+    assertEquals(LocalDate.MAX, table.getValueAsLocalDate(3, 4));
+
+    assertEquals(DataType.INTEGER, table.getColumnTypes().get(0));
+    assertEquals(DataType.STRING, table.getColumnTypes().get(1));
+    assertEquals(DataType.BOOLEAN, table.getColumnTypes().get(2));
+    assertEquals(DataType.DOUBLE, table.getColumnTypes().get(3));
+    assertEquals(DataType.DOUBLE, table.getColumnTypes().get(4));
+
+    assertEquals(1.0, table.getColumnForName("nps").get(0));
+    assertEquals(2, table.getColumnIndex("workingFromHome"));
   }
 
   /**

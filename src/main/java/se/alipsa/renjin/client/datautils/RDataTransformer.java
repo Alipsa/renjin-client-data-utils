@@ -26,8 +26,10 @@ public class RDataTransformer {
       Map<Symbol, SEXP> attrMap = attributes.toMap();
       Symbol s = attrMap.keySet().stream().filter(p -> "names".equals(p.getPrintName())).findAny().orElse(null);
       Vector colNames = (Vector) attrMap.get(s);
-      for (int i = 0; i < colNames.length(); i++) {
-        colList.add(colNames.getElementAsString(i));
+      if (colNames != null) {
+        for (int i = 0; i < colNames.length(); i++) {
+          colList.add(colNames.getElementAsString(i));
+        }
       }
     }
     return colList;

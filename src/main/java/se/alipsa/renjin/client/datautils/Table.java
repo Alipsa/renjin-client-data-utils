@@ -2,6 +2,7 @@ package se.alipsa.renjin.client.datautils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.renjin.primitives.matrix.Matrix;
+import org.renjin.primitives.sequence.IntSequence;
 import org.renjin.sexp.*;
 
 import java.sql.ResultSet;
@@ -82,6 +83,22 @@ public class Table {
     headerList = Collections.unmodifiableList(toHeaderList(df));
     columnTypes = Collections.unmodifiableList(toTypeList(df, contentAsStrings));
     rowList = Collections.unmodifiableList(toRowlist(df, contentAsStrings));
+  }
+
+  public Table(List<String> headers, AbstractAtomicVector... columns) {
+    if (columns.length == 0) {
+      throw new IllegalArgumentException("No column data provided");
+    }
+    ListVector.NamedBuilder builder = new ListVector.NamedBuilder();
+    for (AbstractAtomicVector vec : columns) {
+      builder.add(vec);
+    }
+    builder.setAttribute("row.names", new IntSequence(1, 1, columns[0].length()));
+    builder.setAttribute("class", StringVector.valueOf("data.frame"));
+    ListVector df = builder.build();
+    headerList = Collections.unmodifiableList(headers);
+    columnTypes = Collections.unmodifiableList(toTypeList(df, false));
+    rowList = Collections.unmodifiableList(toRowlist(df, false));
   }
 
   @SafeVarargs
@@ -269,6 +286,9 @@ public class Table {
         index = i;
         break;
       }
+    }
+    if(index == -1) {
+      throw new IllegalArgumentException("There is no column named " + name);
     }
     return getColumnList().get(index);
   }
