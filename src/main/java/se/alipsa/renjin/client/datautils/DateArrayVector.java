@@ -4,6 +4,7 @@ import org.renjin.sexp.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class DateArrayVector extends DoubleVector {
 
   public DateArrayVector(long[] values, AttributeMap attributes) {
     this(attributes);
-    this.values = values;
+    this.values = Arrays.copyOf(values, values.length);
   }
 
   public DateArrayVector(Object... values) {

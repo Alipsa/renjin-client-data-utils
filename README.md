@@ -9,9 +9,10 @@ To use it add the following dependency to your pom.xml:
 <dependency>
     <groupId>se.alipsa</groupId>
     <artifactId>renjin-client-data-utils</artifactId>
-    <version>1.4.3</version>
+    <version>1.5.0</version>
 </dependency>
 ```
+Note: 1.5.0 and later requires java 11, previous version required java 8.
 
 ## se.alipsa.renjin.client.datautils.Table
 The Table class makes it easy to interact with R data.frame and matrix data.
@@ -83,6 +84,9 @@ useful when you only want the result in a particular way once, or you need mutab
 See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/DataTransformationTest.java) for examples.
 
 # Version history
+
+### 1.5.0
+Upgrade to java 11, no module info though (not possible due to BLAS dependencies)
 
 ### 1.4.4
 - Add constructor for column wise constructing of a table

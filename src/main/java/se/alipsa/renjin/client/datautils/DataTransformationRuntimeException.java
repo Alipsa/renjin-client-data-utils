@@ -2,6 +2,8 @@ package se.alipsa.renjin.client.datautils;
 
 public class DataTransformationRuntimeException extends RuntimeException {
 
+  static final long serialVersionUID = 1L;
+
   public DataTransformationRuntimeException() {
   }
 
