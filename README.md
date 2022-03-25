@@ -85,6 +85,8 @@ See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/D
 
 # Version history
 
+### 1.5.1
+
 ### 1.5.0
 Upgrade to java 11, no module info though (not possible due to BLAS dependencies)
 
