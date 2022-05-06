@@ -83,6 +83,8 @@ useful when you only want the result in a particular way once, or you need mutab
 
 See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/DataTransformationTest.java) for examples.
 
+The Java docs is available [here ![javadoc](https://javadoc.io/badge2/se.alipsa/renjin-client-data-utils/javadoc.svg)](https://javadoc.io/doc/se.alipsa/renjin-client-data-utils)
+
 # Version history
 
 ### 1.5.1
