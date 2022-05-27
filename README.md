@@ -1,4 +1,7 @@
 # renjin-client-data-utils
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/se.alipsa/renjin-client-data-utils/badge.svg)](https://maven-badges.herokuapp.com/maven-central/se.alipsa/renjin-client-data-utils)
+[![javadoc](https://javadoc.io/badge2/se.alipsa/renjin-client-data-utils/javadoc.svg)](https://javadoc.io/doc/se.alipsa/renjin-client-data-utils)
+
 Utilities to facilitate working with R data from Renjin in Java. In R, there are various basic 
 data structures such as matrix and data.frame and are faithfully backed by Java classes such as 
 ListVector for data.frame that while very easy to work with in R, can be a bit cumbersome to work with
@@ -82,8 +85,6 @@ In many ways it is similar to the Table class but allows for more atomic operati
 useful when you only want the result in a particular way once, or you need mutable data.
 
 See [DataTransformationTest](src/test/java/test/alipsa/renjin/client/datautils/DataTransformationTest.java) for examples.
-
-The Java docs is available [here ![javadoc](https://javadoc.io/badge2/se.alipsa/renjin-client-data-utils/javadoc.svg)](https://javadoc.io/doc/se.alipsa/renjin-client-data-utils)
 
 # Version history
 
